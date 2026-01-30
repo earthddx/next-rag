@@ -1,4 +1,44 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+## RAG App (WIP)
+My first take on a Retrieval-Augmented Generation (RAG) application built with Next.js and OAuth authentication via NextAuth.
+This project is currently work in progress and evolving.
+
+## Tech Stack
+
+- Next.js (App Router)
+
+- TypeScript
+
+- NextAuth (OAuth)
+
+- Vector store (TBD)
+
+- LLM integration (TBD)
+
+- Embeddings pipeline (TBD)
+
+## Features (So Far)
+
+- OAuth authentication using NextAuth
+
+- Protected routes / API endpoints
+
+- Initial RAG architecture setup
+
+- Document ingestion pipeline (in progress)
+
+- Retrieval + generation flow (in progress)
+
+## High-Level Architecture
+
+- User authenticates via OAuth (NextAuth)
+
+- Documents are embedded and stored in a vector database
+
+- User query → embedding → similarity search
+
+- Retrieved context is injected into the LLM prompt
+
+- LLM generates a grounded response
 
 ## Getting Started
 
