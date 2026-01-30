@@ -6,7 +6,7 @@ export const maxDuration = 30;
 
 export async function POST(req: Request) {
     try {
-        const { messages, webSearch, }: { messages: UIMessage[]; webSearch: boolean; } = await req.json();
+        const { messages, webSearch }: { messages: UIMessage[]; webSearch: boolean; } = await req.json();
 
         const model = openai('gpt-4.1-mini');
 
