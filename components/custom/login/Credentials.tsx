@@ -27,11 +27,12 @@ export default (props: CredentialsFormProps) => {
             });
 
             if (signInResponse && !signInResponse.error) {
-                //TODO: Redirect to homepage or back to login page, tbc
-                router.push("/home");
+                //TODO: Redirect to homepage or dashboard; it is CHAT for now
+                router.push("/chat");
             } else {
                 console.log("Error: ", signInResponse);
-                setError("Your Email or Password is wrong!");
+                setError("Incorrect email or password. Please check your credentials and try again.");
+                setIsLoading(false)
             }
         } catch (e) {
             setError('Something went wrong. Please try again.')

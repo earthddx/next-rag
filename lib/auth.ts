@@ -1,7 +1,8 @@
-import { NextAuthOptions } from "next-auth";
+import { getServerSession, NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GithubProvider from "next-auth/providers/github";
 import GoogleProvider from "next-auth/providers/google";
+import { redirect } from "next/navigation";
 
 export const authConfig: NextAuthOptions = {
     providers: [
@@ -41,3 +42,24 @@ export const authConfig: NextAuthOptions = {
         // ...add more providers here
     ],
 }
+
+export const loginRequiredServer = async () => {
+    const session = await getServerSession(authConfig);
+    if (!session) {
+        redirect("/login");
+    }
+}
+
+
+// export function loginRequiredClient() {
+//     //     if (!useSession().data?.user) {
+//     //         redirect("/login");
+//     //     }
+//     if (typeof window !== "undefined") {
+//         const session = useSession();
+//         const router = useRouter();
+//         if (!session) {
+//             router.push("/login");
+//         }
+//     }
+// }

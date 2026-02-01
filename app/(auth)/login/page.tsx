@@ -1,13 +1,22 @@
 'use client'
 
 import Link from 'next/link';
-import Credentials from '@/components/custom/Credentials';
-import GoogleLoginButton from '@/components/custom/GoogleLoginButton';
-import GithubLoginButton from '@/components/custom/GithubLoginButton';
+import Credentials from '@/components/custom/login/Credentials';
+import GoogleLoginButton from '@/components/custom/login/GoogleLoginButton';
+import GithubLoginButton from '@/components/custom/login/GithubLoginButton';
 import LogoBrand from '@/components/custom/LogoBrand';
 import Divider from '@/components/custom/Divider';
+import { useSession } from 'next-auth/react';
+import { redirect } from 'next/navigation';
+import { getServerSession } from 'next-auth';
+import { authConfig } from '@/lib/auth';
 
-export default function LoginPage() {
+export default async function LoginPage() {
+
+  const session = await getServerSession(authConfig);
+  if (session) {
+    return redirect("/chat");
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 px-4">
