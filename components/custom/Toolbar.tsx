@@ -4,7 +4,7 @@ import Image from "next/image";
 
 export default function Toolbar({ userName, userImageSrc }: { userName: string | null | undefined, userImageSrc: string | null | undefined }) {
     return (
-        <header className="flex justify-between items-center px-6 py-4 bg-gradient-to-r from-amber-200 via-amber-300 to-yellow-200 shadow-lg mb-10 rounded-xl max-w-3xl mx-auto mt-6">
+        <header className="flex sticky top-0 z-50 justify-between items-center px-6 py-4 bg-linear-to-r from-amber-200 via-amber-300 to-yellow-200 shadow-lg mb-10 rounded-xl max-w-3xl mx-auto mt-6">
             {/* Logo & App name */}
             <div className="flex items-center gap-4">
                 <div className="flex items-center justify-center w-14 h-14 bg-blue-600 rounded-xl">
