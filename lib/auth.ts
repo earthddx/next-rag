@@ -3,8 +3,11 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import GithubProvider from "next-auth/providers/github";
 import GoogleProvider from "next-auth/providers/google";
 import { redirect } from "next/navigation";
+import { PrismaAdapter } from "@auth/prisma-adapter"
+import prisma from "./prisma";
 
 export const authConfig: NextAuthOptions = {
+    adapter: PrismaAdapter(prisma),
     providers: [
         CredentialsProvider({
             // The name to display on the sign in form (e.g. "Sign in with...")
@@ -32,12 +35,12 @@ export const authConfig: NextAuthOptions = {
             }
         }),
         GithubProvider({
-            clientId: process.env.GITHUB_ID as string,
-            clientSecret: process.env.GITHUB_SECRET as string,
+            clientId: process.env.GITHUB_ID!,
+            clientSecret: process.env.GITHUB_SECRET!,
         }),
         GoogleProvider({
-            clientId: process.env.GOOGLE_CLIENT_ID as string,
-            clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+            clientId: process.env.GOOGLE_CLIENT_ID!,
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
         })
         // ...add more providers here
     ],

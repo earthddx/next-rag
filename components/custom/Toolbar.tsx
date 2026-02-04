@@ -4,7 +4,11 @@ import Image from "next/image";
 
 export default function Toolbar({ userName, userImageSrc }: { userName: string | null | undefined, userImageSrc: string | null | undefined }) {
     return (
-        <header className="flex sticky top-0 z-50 justify-between items-center px-6 py-4 bg-linear-to-r from-amber-200 via-amber-300 to-yellow-200 shadow-lg mb-10 rounded-xl max-w-3xl mx-auto mt-6">
+        <header
+            onClick={() => {
+                window.scrollTo({ top: 0, behavior: "smooth" })
+            }}
+            className="flex sticky top-0 z-50 justify-between items-center px-6 py-4 bg-linear-to-r from-amber-200 via-amber-300 to-yellow-200 shadow-lg mb-10 rounded-xl max-w-3xl mx-auto mt-6">
             {/* Logo & App name */}
             <div className="flex items-center gap-4">
                 <div className="flex items-center justify-center w-14 h-14 bg-blue-600 rounded-xl">
@@ -30,7 +34,7 @@ export default function Toolbar({ userName, userImageSrc }: { userName: string |
                     />
                 ) : (
                     <div className="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center text-xl text-slate-500 font-semibold">
-                        {userName ? userName.charAt(0).toUpperCase() : <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="8" r="4" strokeWidth={2}/><path strokeWidth={2} d="M4 20c0-2.2 3.6-4 8-4s8 1.8 8 4" /></svg>}
+                        {userName ? userName.charAt(0).toUpperCase() : <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="8" r="4" strokeWidth={2} /><path strokeWidth={2} d="M4 20c0-2.2 3.6-4 8-4s8 1.8 8 4" /></svg>}
                     </div>
                 )}
                 <button

@@ -2,16 +2,25 @@ import Image from "next/image";
 import { getServerSession } from "next-auth";
 import { authConfig } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import prisma from "@/lib/prisma";
 
 export default async function Home() {
 
   const session = await getServerSession(authConfig);
+  const users = await prisma.user.findMany();
 
-  if(!session) {
-    redirect("/login");
-  }
+  console.log(users)
 
-  console.log(session)
+  if (!users || !users.length) return <div>NO USERS</div>
+
+  return <div>
+    {users.map(user => {
+      return <div key={user.id}>
+        <h1>{user.name}</h1>
+        <h2>{user.email}</h2>
+      </div>
+    })}
+  </div>
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
