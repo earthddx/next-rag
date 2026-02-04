@@ -2,7 +2,7 @@ import Image from "next/image";
 import { getServerSession } from "next-auth";
 import { authConfig } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import prisma from "@/lib/prisma";
+import {prisma} from "@/lib/prisma";
 
 export default async function Home() {
 
