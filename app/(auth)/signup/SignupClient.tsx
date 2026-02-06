@@ -20,8 +20,11 @@ function SignupClient() {
         setError('');
         setLoading(true);
 
+
         try {
             const data = new FormData(e.currentTarget);
+            console.log(data.get("email"))
+            console.log(data.get("password"))
             // Create account
             const response = await fetch('/api/auth/signup', {
                 method: 'POST',

@@ -59,6 +59,25 @@ export const authConfig: NextAuthOptions = {
         })
         // ...add more providers here
     ],
+    session: {
+        strategy: "jwt",
+    },
+    // 2. Add callbacks to ensure the ID is passed to the session
+    callbacks: {
+        async jwt({ token, user }) {
+            if (user) {
+                token.id = user.id;
+            }
+            return token;
+        },
+        async session({ session, token }) {
+            if (session.user) {
+                // Attach the user ID from the token to the session object
+                (session.user as any).id = token.id;
+            }
+            return session;
+        },
+    },
 }
 
 export const loginRequiredServer = async () => {
