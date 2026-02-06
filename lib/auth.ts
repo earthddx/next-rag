@@ -4,7 +4,9 @@ import GithubProvider from "next-auth/providers/github";
 import GoogleProvider from "next-auth/providers/google";
 import { redirect } from "next/navigation";
 import { PrismaAdapter } from "@auth/prisma-adapter"
-import {prisma} from "./prisma";
+import { prisma } from "./prisma";
+import bcrypt from 'bcrypt';
+
 
 export const authConfig: NextAuthOptions = {
     adapter: PrismaAdapter(prisma),
@@ -21,17 +23,30 @@ export const authConfig: NextAuthOptions = {
                 password: { label: "Password", type: "password" }
             },
             async authorize(credentials, req) {
-                if (!credentials || !credentials.email || !credentials.password) {
+                if (!credentials?.email || !credentials?.password) {
                     return null;
                 }
 
-                //TODO: connect to a DB and get user
-                // const user = await supabase.user.find({crednetials.email})
-                // if (user && user.password === credentials.password) {
-                //     const {dbUser} = user;
-                //     return dbUser;
-                // }
-                return null;
+                const user = await prisma.user.findUnique({ where: { email: credentials.email } });
+                if (!user || !user.password) {
+                    return null;
+                }
+
+                const isPasswordValid = await bcrypt.compare(
+                    credentials.password,
+                    user.password
+                );
+
+                if (!isPasswordValid) {
+                    return null;
+                }
+
+                return {
+                    id: user.id,
+                    email: user.email,
+                    name: user.name,
+                    image: user.image,
+                };
             }
         }),
         GithubProvider({

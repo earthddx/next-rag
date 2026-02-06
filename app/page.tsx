@@ -1,85 +1,59 @@
-import Image from "next/image";
+import Link from "next/link";
 import { getServerSession } from "next-auth";
 import { authConfig } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import {prisma} from "@/lib/prisma";
 
 export default async function Home() {
-
   const session = await getServerSession(authConfig);
-  const users = await prisma.user.findMany();
 
-  console.log(users)
-
-  if (!users || !users.length) return <div>NO USERS</div>
-
-  return <div>
-    {users.map(user => {
-      return <div key={user.id}>
-        <h1>{user.name}</h1>
-        <h2>{user.email}</h2>
-      </div>
-    })}
-  </div>
+  // If already logged in, skip the landing page
+  if (session) {
+    redirect("/chat");
+  }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <div className="min-h-screen bg-linear-to-br from-slate-900 via-slate-800 to-slate-900 text-white">
+      <main className="mx-auto flex min-h-screen max-w-4xl flex-col items-center justify-center px-6 text-center">
+        {/* Badge / eyebrow */}
+        <span className="mb-6 inline-flex items-center rounded-full border border-slate-700 bg-slate-800/60 px-4 py-1 text-sm text-slate-300 backdrop-blur">
+          Retrieval-Augmented Generation Playground
+        </span>
+
+        {/* Hero */}
+        <h1 className="mb-6 text-4xl font-semibold tracking-tight sm:text-5xl">
+          Chat with your own knowledge.
+          <br />
+          <span className="text-blue-400">Powered by RAG.</span>
+        </h1>
+
+        {/* Description */}
+        <p className="mb-10 max-w-2xl text-lg leading-8 text-slate-300">
+          This app lets you upload or connect your own data and ask questions
+          using an AI model grounded in your content.  
+          No hallucinations. Just answers backed by your sources.
+        </p>
+
+        {/* CTA buttons */}
+        <div className="flex flex-col gap-4 sm:flex-row">
+          <Link
+            href="/signup"
+            className="rounded-xl bg-blue-500 px-8 py-3 text-base font-semibold text-white transition hover:bg-blue-400"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            Get started
+          </Link>
+
+          <Link
+            href="/login"
+            className="rounded-xl border border-slate-600 px-8 py-3 text-base font-semibold text-slate-200 transition hover:bg-slate-800"
           >
-            Documentation
-          </a>
+            Log in
+          </Link>
         </div>
+
+        {/* Footer hint */}
+        <p className="mt-10 text-sm text-slate-500">
+          Built with Next.js, Prisma, and modern LLM tooling
+        </p>
       </main>
     </div>
   );
