@@ -9,6 +9,10 @@ This project is currently work in progress and evolving.
 - TypeScript
 
 - NextAuth (OAuth)
+  
+- Prisma (user persistence)
+
+- Database (used via Prisma)
 
 - Vector store (TBD)
 
@@ -19,6 +23,8 @@ This project is currently work in progress and evolving.
 ## Features (So Far)
 
 - OAuth authentication using NextAuth
+  
+- User persistence via Prisma
 
 - Protected routes / API endpoints
 
