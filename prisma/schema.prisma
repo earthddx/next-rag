@@ -7,6 +7,7 @@
 generator client {
   provider = "prisma-client"
   output   = "../lib/generated/prisma"
+  previewFeatures = ["postgresqlExtensions"]
 }
 
 datasource db {
@@ -25,6 +26,10 @@ model User {
   sessions      Session[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+   // Your RAG additions
+  chatSessions  ChatSession[]
+  documents     Document[]
 }
  
 model Account {
@@ -64,6 +69,61 @@ model VerificationToken {
   expires    DateTime
  
   @@id([identifier, token])
+}
+
+// Your RAG models
+model ChatSession {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title       String?   @default("New Chat")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  messages    Message[]
+  
+  @@index([userId, createdAt])
+}
+
+model Message {
+  id            String      @id @default(cuid())
+  sessionId     String
+  session       ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  role          String
+  content       String      @db.Text
+  metadata      Json?
+  createdAt     DateTime    @default(now())
+  
+  @@index([sessionId, createdAt])
+}
+
+model Document {
+  id            String           @id @default(cuid())
+  userId        String
+  user          User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fileName      String
+  fileType      String
+  fileSize      Int
+  filePath      String
+  status        String           @default("processing")
+  uploadedAt    DateTime         @default(now())
+  processedAt   DateTime?
+  chunks        DocumentChunk[]
+  
+  @@index([userId, uploadedAt])
+}
+
+model DocumentChunk {
+  id            String    @id @default(cuid())
+  documentId    String
+  document      Document  @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  content       String    @db.Text
+  embedding     Unsupported("vector(1536)")?  // pgvector
+  metadata      Json?
+  chunkIndex    Int
+  createdAt     DateTime  @default(now())
+  
+  @@index([documentId])
+  @@index([documentId, chunkIndex])
 }
 
 enum Role {
