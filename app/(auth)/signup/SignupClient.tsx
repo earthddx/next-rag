@@ -84,7 +84,7 @@ function SignupClient() {
                 <p className="text-center mt-6 text-slate-400">
                     Have an account?{' '}
                     <Link href="/login" className="text-blue-400 hover:text-blue-300 font-semibold transition">
-                        Go to Log in
+                        Log in
                     </Link>
                 </p>
             </div>
