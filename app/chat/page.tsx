@@ -13,7 +13,7 @@ const ChatPage = async () => {
 
     return <RAGChatBot />
 
-    return <ChatContent />
+    // return <ChatContent />
 };
 
 
