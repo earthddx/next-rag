@@ -52,17 +52,17 @@ export const authConfig: NextAuthOptions = {
         GithubProvider({
             clientId: process.env.GITHUB_ID!,
             clientSecret: process.env.GITHUB_SECRET!,
+            allowDangerousEmailAccountLinking: true,
         }),
         GoogleProvider({
             clientId: process.env.GOOGLE_CLIENT_ID!,
             clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+            allowDangerousEmailAccountLinking: true,
         })
-        // ...add more providers here
     ],
     session: {
         strategy: "jwt",
     },
-    // 2. Add callbacks to ensure the ID is passed to the session
     callbacks: {
         async jwt({ token, user }) {
             if (user) {
@@ -83,20 +83,6 @@ export const authConfig: NextAuthOptions = {
 export const loginRequiredServer = async () => {
     const session = await getServerSession(authConfig);
     if (!session) {
-        redirect("/login");
+        redirect("/");
     }
 }
-
-
-// export function loginRequiredClient() {
-//     //     if (!useSession().data?.user) {
-//     //         redirect("/login");
-//     //     }
-//     if (typeof window !== "undefined") {
-//         const session = useSession();
-//         const router = useRouter();
-//         if (!session) {
-//             router.push("/login");
-//         }
-//     }
-// }
