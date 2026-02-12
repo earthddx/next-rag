@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useChat } from "@ai-sdk/react";
-import { Button } from "@/components/ui/button";
+import ButtonScrollDown from "./ButtonScrollDown";
 import {
     Conversation,
     ConversationContent,
@@ -31,6 +31,8 @@ import {
 } from "@/components/ai-elements/prompt-input";
 import { Suggestion, Suggestions } from "@/components/ai-elements/suggestion";
 import { Loader } from "@/components/ai-elements/loader";
+import { ButtonGroup } from "../ui/button-group";
+import { Button } from "../ui/button";
 
 const suggestions = [
     "What documents have been uploaded?",
@@ -59,10 +61,12 @@ export default function RAGChatBot() {
 
 
     return (
-        <div className="flex h-screen flex-col overflow-hidden divide-y">
-            <div className="flex-1 min-h-0 overflow-hidden">
+        <div className="mx-auto flex size-full min-h-dvh max-w-3xl flex-col md:px-2">
+            <div className="flex-1 flex flex-col px-4 max-w-3xl mx-auto w-full pt-1">
                 <Conversation className="h-full px-10">
-                    <ConversationContent>
+                    <ConversationContent 
+                    className="overflow-hidden"
+                    >
                         {messages.map((message) => {
                             const textParts = message.parts.filter((p) => p.type === "text");
                             return (
@@ -93,38 +97,40 @@ export default function RAGChatBot() {
                     </ConversationContent>
                     <ConversationScrollButton />
                 </Conversation>
-            </div>
-            <div className="fixed bottom-0 right-0 left-0  m-autogrid w-full max-w-[48rem] shrink-0 gap-4 pt-4 mx-auto">
-                <Suggestions className=" max-w-[48rem] px-4 overflow-auto">
-                    {suggestions.map((suggestion) => (
-                        <Suggestion
-                            key={suggestion}
-                            onClick={() => handleSuggestionClick(suggestion)}
-                            suggestion={suggestion}
-                        />
-                    ))}
-                </Suggestions>
-                <div className="w-full px-4 pb-4">
-                    <div className="mb-4">
-                        <Button asChild variant="outline" size="sm">
-                            <Link href="/upload">Upload documents</Link>
-                        </Button>
+
+                <div className="sticky bottom-0 mx-auto w-full pt-6 z-[5]">
+                    {/* <ButtonScrollDown containerRef={window.document} /> */}
+                    <Suggestions className="px-4 overflow-auto">
+                        {suggestions.map((suggestion) => (
+                            <Suggestion
+                                key={suggestion}
+                                onClick={() => handleSuggestionClick(suggestion)}
+                                suggestion={suggestion}
+                            />
+                        ))}
+                    </Suggestions>
+                    <div className="bg-white w-full px-4 pb-4">
+                        <div className="mb-4">
+                            <Button asChild variant="outline" size="sm">
+                                <Link href="/upload">Upload documents</Link>
+                            </Button>
+                        </div>
+                        <PromptInput onSubmit={handleSubmit}>
+                            <PromptInputBody>
+                                <PromptInputTextarea
+                                    value={text}
+                                    onChange={(e) => setText(e.target.value)}
+                                />
+                            </PromptInputBody>
+                            <PromptInputFooter>
+                                <PromptInputTools />
+                                <PromptInputSubmit
+                                    disabled={!text.trim() && status !== "submitted" && status !== "streaming"}
+                                    status={status}
+                                />
+                            </PromptInputFooter>
+                        </PromptInput>
                     </div>
-                    <PromptInput onSubmit={handleSubmit}>
-                        <PromptInputBody>
-                            <PromptInputTextarea
-                                value={text}
-                                onChange={(e) => setText(e.target.value)}
-                            />
-                        </PromptInputBody>
-                        <PromptInputFooter>
-                            <PromptInputTools />
-                            <PromptInputSubmit
-                                disabled={!text.trim() && status !== "submitted" && status !== "streaming"}
-                                status={status}
-                            />
-                        </PromptInputFooter>
-                    </PromptInput>
                 </div>
             </div>
         </div>
