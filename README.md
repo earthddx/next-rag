@@ -20,7 +20,7 @@ retrieval → generation pipeline.
 -   **Prisma ORM**
 -   **PostgreSQL**
 -   **pgvector** (vector similarity search)
--   **pdf-parse** (PDF text extraction)
+-   **pdf2json** (PDF text extraction)
 -   **Vercel AI SDK**
 -   **AI Elements** (chat + UI primitives)
 
@@ -29,7 +29,7 @@ retrieval → generation pipeline.
 ## What This App Does
 
 1.  User uploads a PDF\
-2.  PDF is parsed using `pdf-parse`\
+2.  PDF is parsed using `pdf2json`\
 3.  Text is chunked and embedded\
 4.  Embeddings are stored in PostgreSQL using `pgvector`\
 5.  User asks a question\
@@ -51,7 +51,7 @@ retrieval → generation pipeline.
 ### Document Ingestion
 
 -   PDF upload support
--   Text extraction using `pdf-parse`
+-   Text extraction using `pdf2json`
 -   Chunking pipeline
 -   Embedding generation
 -   Vector storage with `pgvector`
@@ -74,7 +74,7 @@ retrieval → generation pipeline.
 
 ### 2. Ingestion Pipeline
 
--   PDF → text extraction (`pdf-parse`)
+-   PDF → text extraction (`pdf2json`)
 -   Text → chunking
 -   Chunk → embedding
 -   Embedding → stored in Postgres (`pgvector` column)
