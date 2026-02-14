@@ -1,12 +1,14 @@
 "use server";
 
-import { PDFParse } from 'pdf-parse';
-import { generateEmbedding, generateEmbeddings } from '@/lib/embeddings';
+import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf.mjs';
+import { generateEmbeddings } from '@/lib/embeddings';
 import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
 import { authConfig } from '@/lib/auth';
 import { chunkContent } from '@/lib/chunking';
 
+// Disable worker for serverless environment
+pdfjsLib.GlobalWorkerOptions.workerSrc = '';
 
 export async function processPdfFile(formData: FormData) {
     try {
@@ -15,9 +17,7 @@ export async function processPdfFile(formData: FormData) {
             return { success: false, error: 'Unauthorized' };
         }
 
-
         const file = formData.get("pdf") as File;
-
         if (!file) {
             return { success: false, error: 'No file provided' };
         }
@@ -26,12 +26,28 @@ export async function processPdfFile(formData: FormData) {
         const bytes = await file.arrayBuffer();
         const buffer = Buffer.from(bytes);
 
-        const parser = new PDFParse({ data: buffer });
-        const result = await parser.getText();
-        await parser.destroy();
+        // Parse PDF
+        const loadingTask = pdfjsLib.getDocument({
+            data: buffer,
+            useSystemFonts: true,
+            disableFontFace: true,
+        });
+        
+        const pdfDocument = await loadingTask.promise;
+        
+        let fullText = '';
+        
+        // Extract text from each page
+        for (let pageNum = 1; pageNum <= pdfDocument.numPages; pageNum++) {
+            const page = await pdfDocument.getPage(pageNum);
+            const textContent = await page.getTextContent();
+            const pageText = textContent.items
+                .map((item: any) => item.str)
+                .join(' ');
+            fullText += pageText + '\n';
+        }
 
-
-        if (!result.text || !result.text.trim()) {
+        if (!fullText || !fullText.trim()) {
             return {
                 success: false,
                 error: "No text found in PDF"
@@ -54,44 +70,15 @@ export async function processPdfFile(formData: FormData) {
                 fileName: file.name,
                 fileType: file.type,
                 fileSize: file.size,
-                filePath: `/uploads/${user.id}/${file.name}`, // adjust as needed
+                filePath: `/uploads/${user.id}/${file.name}`,
                 status: 'processing'
             }
         });
 
         // Chunk the content
-        const chunks = await chunkContent(result.text);
+        const chunks = await chunkContent(fullText);
         const embeddings = await generateEmbeddings(chunks);
-        // const records = chunks.map((chunk, i) => ({
-        //     content: chunk,
-        //     embedding: embeddings[i]
 
-        // }));
-
-        // Generate embeddings and save chunks
-        // for (let i = 0; i < chunks.length; i++) {
-        //     const embedding = await generateEmbedding(chunks[i]);
-
-        //     const chunk = await prisma.documentChunk.create({
-        //         data: {
-        //             documentId: document.id,
-        //             content: chunks[i],
-        //             chunkIndex: i,
-        //             metadata: {
-        //                 pageCount: Array.isArray(result.pages) ? result.pages.length : 0,
-        //                 totalPages: Array.isArray(result.pages) ? result.pages.length : 0
-        //             }
-        //         }
-        //     });
-
-        //     // Prisma omits Unsupported (vector) from create input; set embedding via raw SQL
-        //     const vectorStr = `[${embedding.join(',')}]`;
-        //     await prisma.$executeRaw`
-        //         UPDATE "DocumentChunk" SET embedding = ${vectorStr}::vector WHERE id = ${chunk.id}
-        //     `;
-        // }
-        // Create chunks with a transaction
-        // Step 1: Create all chunks (single transaction)
         const createdChunks = await prisma.$transaction(
             chunks.map((chunk, i) =>
                 prisma.documentChunk.create({
@@ -100,27 +87,25 @@ export async function processPdfFile(formData: FormData) {
                         content: chunk,
                         chunkIndex: i,
                         metadata: {
-                            pageCount: Array.isArray(result.pages) ? result.pages.length : 0,
-                            totalPages: Array.isArray(result.pages) ? result.pages.length : 0
+                            pageCount: pdfDocument.numPages,
+                            totalPages: pdfDocument.numPages
                         }
                     }
                 })
             )
         );
 
-        // Step 2: Update all embeddings (single transaction)
         await prisma.$transaction(
             createdChunks.map((chunk, i) => {
                 const vectorStr = `[${embeddings[i].join(',')}]`;
                 return prisma.$executeRaw`
-        UPDATE "DocumentChunk" 
-        SET embedding = ${vectorStr}::vector 
-        WHERE id = ${chunk.id}
-      `;
+                    UPDATE "DocumentChunk" 
+                    SET embedding = ${vectorStr}::vector 
+                    WHERE id = ${chunk.id}
+                `;
             })
         );
 
-        // Update document status
         await prisma.document.update({
             where: { id: document.id },
             data: {
@@ -134,7 +119,6 @@ export async function processPdfFile(formData: FormData) {
             documentId: document.id,
             chunksCreated: chunks.length
         };
-
 
     } catch (e) {
         console.error("PDF Processing error: ", e);
