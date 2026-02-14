@@ -1,14 +1,11 @@
 "use server";
 
-import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf.mjs';
+import PDFParser from "pdf2json";
 import { generateEmbeddings } from '@/lib/embeddings';
 import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
 import { authConfig } from '@/lib/auth';
 import { chunkContent } from '@/lib/chunking';
-
-// Disable worker for serverless environment
-pdfjsLib.GlobalWorkerOptions.workerSrc = '';
 
 export async function processPdfFile(formData: FormData) {
     try {
@@ -26,28 +23,30 @@ export async function processPdfFile(formData: FormData) {
         const bytes = await file.arrayBuffer();
         const buffer = Buffer.from(bytes);
 
-        // Parse PDF
-        const loadingTask = pdfjsLib.getDocument({
-            data: buffer,
-            useSystemFonts: true,
-            disableFontFace: true,
-        });
-        
-        const pdfDocument = await loadingTask.promise;
-        
-        let fullText = '';
-        
-        // Extract text from each page
-        for (let pageNum = 1; pageNum <= pdfDocument.numPages; pageNum++) {
-            const page = await pdfDocument.getPage(pageNum);
-            const textContent = await page.getTextContent();
-            const pageText = textContent.items
-                .map((item: any) => item.str)
-                .join(' ');
-            fullText += pageText + '\n';
-        }
+        console.log('📄 Processing PDF:', file.name, 'Size:', file.size);
 
-        if (!fullText || !fullText.trim()) {
+        // Parse PDF using pdf2json
+        const pdfParser = new (PDFParser as any)(null, 1);
+
+        const text = await new Promise<string>((resolve, reject) => {
+            pdfParser.on("pdfParser_dataError", (errData: any) => {
+                console.error('❌ PDF Parser Error:', errData);
+                reject(new Error(errData.parserError || 'PDF parsing failed'));
+            });
+            pdfParser.on("pdfParser_dataReady", (pdfData: any) => {
+                console.log('✅ PDF parsed successfully');
+                const rawText = pdfParser.getRawTextContent();
+                console.log('📝 Extracted text length:', rawText?.length || 0);
+                console.log('📝 First 200 chars:', rawText?.substring(0, 200));
+                resolve(rawText);
+            });
+            pdfParser.parseBuffer(buffer);
+        });
+
+        console.log('Final text length:', text?.length || 0);
+        console.log('Text trimmed length:', text?.trim().length || 0);
+
+        if (!text || !text.trim()) {
             return {
                 success: false,
                 error: "No text found in PDF"
@@ -76,7 +75,7 @@ export async function processPdfFile(formData: FormData) {
         });
 
         // Chunk the content
-        const chunks = await chunkContent(fullText);
+        const chunks = await chunkContent(text);
         const embeddings = await generateEmbeddings(chunks);
 
         const createdChunks = await prisma.$transaction(
@@ -87,8 +86,8 @@ export async function processPdfFile(formData: FormData) {
                         content: chunk,
                         chunkIndex: i,
                         metadata: {
-                            pageCount: pdfDocument.numPages,
-                            totalPages: pdfDocument.numPages
+                            pageCount: 0, // pdf2json doesn't easily expose page count
+                            totalPages: 0
                         }
                     }
                 })
