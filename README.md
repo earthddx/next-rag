@@ -1,82 +1,165 @@
-## RAG App (WIP)
-My first take on a Retrieval-Augmented Generation (RAG) application built with Next.js and OAuth authentication via NextAuth.
-This project is currently work in progress and evolving.
+# RAG PDF App
+
+A Retrieval-Augmented Generation (RAG) application that allows users to
+upload PDFs, embed their contents, and query them using an LLM with
+grounded responses.
+
+Built with **Next.js 16 (App Router)** and a Postgres + pgvector vector
+store, this project demonstrates a full document ingestion → embedding →
+retrieval → generation pipeline.
+
+> Status: Actively evolving.
+
+------------------------------------------------------------------------
 
 ## Tech Stack
 
-- Next.js (App Router)
+-   **Next.js 16 (App Router)**
+-   **TypeScript**
+-   **NextAuth** (OAuth authentication)
+-   **Prisma ORM**
+-   **PostgreSQL**
+-   **pgvector** (vector similarity search)
+-   **pdf-parse** (PDF text extraction)
+-   **Vercel AI SDK**
+-   **AI Elements** (chat + UI primitives)
 
-- TypeScript
+------------------------------------------------------------------------
 
-- NextAuth (OAuth)
-  
-- Prisma (user persistence)
+## What This App Does
 
-- Database (used via Prisma)
+1.  User uploads a PDF\
+2.  PDF is parsed using `pdf-parse`\
+3.  Text is chunked and embedded\
+4.  Embeddings are stored in PostgreSQL using `pgvector`\
+5.  User asks a question\
+6.  Query is embedded\
+7.  Similar chunks are retrieved via vector similarity search\
+8.  Retrieved context is injected into the LLM prompt\
+9.  LLM generates a grounded answer
 
-- Vector store (TBD)
+------------------------------------------------------------------------
 
-- LLM integration (TBD)
+## Features
 
-- Embeddings pipeline (TBD)
+### Authentication
 
-## Features (So Far)
+-   OAuth authentication via NextAuth
+-   User persistence with Prisma
+-   Protected routes and API endpoints
 
-- OAuth authentication using NextAuth
-  
-- User persistence via Prisma
+### Document Ingestion
 
-- Protected routes / API endpoints
+-   PDF upload support
+-   Text extraction using `pdf-parse`
+-   Chunking pipeline
+-   Embedding generation
+-   Vector storage with `pgvector`
 
-- Initial RAG architecture setup
+### Retrieval & Generation
 
-- Document ingestion pipeline (in progress)
+-   Semantic similarity search in Postgres
+-   Context-aware prompt construction
+-   Streaming chat responses using AI SDK
+-   Chat UI powered by AI Elements
 
-- Retrieval + generation flow (in progress)
+------------------------------------------------------------------------
 
-## High-Level Architecture
+## Architecture Overview
 
-- User authenticates via OAuth (NextAuth)
+### 1. Auth Layer
 
-- Documents are embedded and stored in a vector database
+-   OAuth login via NextAuth
+-   Prisma persists users in PostgreSQL
 
-- User query → embedding → similarity search
+### 2. Ingestion Pipeline
 
-- Retrieved context is injected into the LLM prompt
+-   PDF → text extraction (`pdf-parse`)
+-   Text → chunking
+-   Chunk → embedding
+-   Embedding → stored in Postgres (`pgvector` column)
 
-- LLM generates a grounded response
+### 3. Query Pipeline
 
-## Getting Started
+-   User query → embedding
+-   Vector similarity search via `pgvector`
+-   Top-K chunks retrieved
+-   Context injected into LLM prompt
+-   LLM generates grounded answer
 
-First, run the development server:
+------------------------------------------------------------------------
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## Database
+
+-   PostgreSQL
+-   Prisma as ORM
+-   `pgvector` extension enabled
+-   Embeddings stored directly in Postgres (no external vector DB)
+
+------------------------------------------------------------------------
+
+## Local Development
+
+Install dependencies:
+
+``` bash
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Run the development server:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+``` bash
+npm run dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Then open:
 
-## Learn More
+http://localhost:3000
 
-To learn more about Next.js, take a look at the following resources:
+------------------------------------------------------------------------
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Environment Variables
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+You will need:
 
-## Deploy on Vercel
+-   `DATABASE_URL`
+-   `NEXTAUTH_SECRET`
+-   OAuth provider credentials
+-   AI provider API key (used by AI SDK)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+------------------------------------------------------------------------
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Why This Project
+
+This project demonstrates:
+
+-   End-to-end RAG implementation
+-   Production-style vector search using Postgres
+-   Modern Next.js App Router patterns
+-   Streaming LLM responses
+-   Secure multi-user architecture
+
+------------------------------------------------------------------------
+
+## Future Improvements
+
+-   Other extensions (not only .pdf)
+-   Smarter chunking strategy
+-   Metadata filtering
+-   Hybrid search (BM25 + vector)
+-   Conversation memory
+-   Document management dashboard
+-   Rate limiting / quota system
+-   WhatsApp chatbot integration
+-   Discord bot integration
+
+------------------------------------------------------------------------
+
+## Deployment
+
+This app can be deployed on Vercel or any Node-compatible hosting
+platform with:
+
+-   PostgreSQL + pgvector
+-   Proper environment variables
+-   AI provider credentials
