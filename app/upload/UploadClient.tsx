@@ -150,7 +150,7 @@ export default function PDFUpload() {
             </Card>
             <div className="mt-4">
                 <Button asChild variant="outline" size="sm">
-                    <Link href="/chat">Back to chat</Link>
+                    <Link href="/chatroom">Back to chat</Link>
                 </Button>
             </div>
         </div>

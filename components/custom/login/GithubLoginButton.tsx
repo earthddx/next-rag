@@ -6,7 +6,7 @@ function GithubLoginButton() {
   return (
     <button
     type="button"
-    onClick={() => signIn('github', { callbackUrl: '/chat' })}
+    onClick={() => signIn('github', { callbackUrl: '/chatroom' })}
     className="flex items-center justify-center px-4 py-3 border border-slate-600 rounded-lg hover:bg-slate-700/50 transition text-slate-300"
   >
     <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">

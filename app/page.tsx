@@ -8,7 +8,7 @@ export default async function Home() {
 
   // If already logged in, skip the landing page
   if (session) {
-    redirect("/chat");
+    redirect("/chatroom");
   }
 
   return (

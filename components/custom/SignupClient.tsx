@@ -47,7 +47,7 @@ function SignupClient() {
 
             if (signInResponse && !signInResponse.error) {
                 //TODO: Redirect to homepage or dashboard; it is CHAT for now
-                router.push("/chat");
+                router.push("/chatroom");
                 router.refresh();
             } else {
                 console.log("Error: ", signInResponse);
