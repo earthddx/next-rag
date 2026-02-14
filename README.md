@@ -143,12 +143,15 @@ This project demonstrates:
 
 ## Future Improvements
 
+-   Other extensions (not only .pdf)
 -   Smarter chunking strategy
 -   Metadata filtering
 -   Hybrid search (BM25 + vector)
 -   Conversation memory
 -   Document management dashboard
 -   Rate limiting / quota system
+-   WhatsApp chatbot integration
+-   Discord bot integration
 
 ------------------------------------------------------------------------
 
