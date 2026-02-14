@@ -17,7 +17,7 @@ export default function Toolbar({ userName, userImageSrc }: { userName: string |
                     </svg>
                 </div>
                 <div>
-                    <span className="block text-2xl font-extrabold text-slate-800">RAG Chat</span>
+                    <span className="block text-2xl font-extrabold text-slate-800">AskAbout</span>
                     <span className="block text-sm text-slate-500">Welcome Back{userName ? `, ${userName}` : ""}!</span>
                 </div>
             </div>
