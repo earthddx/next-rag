@@ -8,7 +8,7 @@ export default function Toolbar({ userName, userImageSrc }: { userName: string |
             onClick={() => {
                 window.scrollTo({ top: 0, behavior: "smooth" })
             }}
-            className="flex sticky top-0 z-50 justify-between items-center px-6 py-4 bg-linear-to-r from-amber-200 via-amber-300 to-yellow-200 shadow-lg rounded-xl max-w-3xl mx-auto">
+            className="flex sticky top-0 z-50 justify-between items-center p-2.5 bg-linear-to-br from-slate-900 via-slate-800 to-slate-900 shadow-lg rounded-b-lg max-w-3xl mx-auto">
             {/* Logo & App name */}
             <div className="flex items-center gap-4">
                 <div className="flex items-center justify-center w-14 h-14 bg-blue-600 rounded-xl">
@@ -17,7 +17,7 @@ export default function Toolbar({ userName, userImageSrc }: { userName: string |
                     </svg>
                 </div>
                 <div>
-                    <span className="block text-2xl font-extrabold text-slate-800">AskAbout</span>
+                    <span className="block text-2xl font-extrabold text-slate-200">AskAbout</span>
                     <span className="block text-sm text-slate-500">Welcome Back{userName ? `, ${userName}` : ""}!</span>
                 </div>
             </div>
