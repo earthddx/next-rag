@@ -41,6 +41,7 @@
     "@streamdown/math": "^1.0.1",
     "@streamdown/mermaid": "^1.0.1",
     "@types/pdf-parse": "^1.1.5",
+    "@vercel/blob": "^2.2.0",
     "@xyflow/react": "^12.10.0",
     "ai": "^6.0.62",
     "ansi-to-react": "^6.2.6",
