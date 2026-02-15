@@ -3,6 +3,7 @@
 import React from "react";
 import { useChat } from "@ai-sdk/react";
 import { toast } from "sonner";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
     Conversation,
     ConversationContent,
@@ -39,6 +40,12 @@ const suggestions = [
     "Search for specific information in my files",
     "What are the main topics in my documents?",
 ];
+
+type PdfMetadata = {
+    isPdfUpload?: boolean;
+    fileUrl?: string;
+    fileName?: string;
+};
 
 const dataURItoFile = async (dataURI: string, filename: string): Promise<File> => {
     const response = await fetch(dataURI);
@@ -78,6 +85,7 @@ const AttachmentsPreview = () => {
 export default function Chat() {
     const [input, setInput] = React.useState("");
     const [isProcessingPdf, setIsProcessingPdf] = React.useState(false);
+    const [previewPdf, setPreviewPdf] = React.useState<{ url: string; fileName: string } | null>(null);
 
     const { messages, sendMessage, setMessages, status } = useChat();
 
@@ -130,6 +138,12 @@ export default function Chat() {
                                 type: "text" as const,
                                 text: `✅ Successfully processed ${fileData.filename} (${result.chunksCreated} chunks created)`
                             }],
+                            // Store fileUrl in metadata for preview
+                            metadata: {
+                                fileUrl: result.fileUrl,
+                                fileName: fileData.filename,
+                                isPdfUpload: true
+                            }
                         };
                         setMessages((prev) => [...prev, assistantMessage]);
                     } else {
@@ -189,16 +203,34 @@ export default function Chat() {
                             <Message key={message.id} from={message.role}>
                                 <MessageContent>
                                     {message.role === "assistant" ? (
-                                        <MessageResponse>
-                                            {message.parts
-                                                ?.filter((part) => part.type === "text")
-                                                .map((part) => part.text)
-                                                .join("")}
-                                        </MessageResponse>
+                                        <div className="space-y-2">
+                                            <MessageResponse>
+                                                {message.parts
+                                                    ?.filter((part) => part.type === "text")
+                                                    .map((part) => part.text)
+                                                    .join("")}
+                                            </MessageResponse>
+                                            {/* Show preview button for PDF uploads */}
+                                            {(() => {
+                                                const metadata = message.metadata as PdfMetadata;
+                                                return metadata?.isPdfUpload && metadata?.fileUrl && (
+                                                    <button
+                                                        onClick={() => setPreviewPdf({
+                                                            url: metadata.fileUrl!,
+                                                            fileName: metadata.fileName!
+                                                        })}
+                                                        className="inline-flex items-center gap-2 px-3 py-1.5 text-sm bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors"
+                                                    >
+                                                        <FileTextIcon className="size-4" />
+                                                        View PDF
+                                                    </button>
+                                                );
+                                            })()}
+                                        </div>
                                     ) : (
-                                        message.parts?.map(
-                                            (part) => part.type === "text" && part.text,
-                                        )
+                                        message.parts
+                                            ?.filter((part) => part.type === "text")
+                                            .map((part) => part.text)
                                     )}
                                 </MessageContent>
                             </Message>
@@ -251,6 +283,24 @@ export default function Chat() {
                     </PromptInput>
                 </div>
             </div>
+
+            {/* PDF Preview Modal */}
+            <Dialog open={!!previewPdf} onOpenChange={(open) => !open && setPreviewPdf(null)}>
+                <DialogContent className="sm:max-w-3xl md:max-w-5xl  flex flex-col h-[90vh]">
+                    <DialogHeader>
+                        <DialogTitle>{previewPdf?.fileName || "PDF Preview"}</DialogTitle>
+                    </DialogHeader>
+                    <div className="flex-1 min-h-0">
+                        {previewPdf && (
+                            <iframe
+                                src={previewPdf.url}
+                                className="w-full h-full border-0 rounded"
+                                title={previewPdf.fileName}
+                            />
+                        )}
+                    </div>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }
