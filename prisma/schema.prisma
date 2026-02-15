@@ -103,13 +103,12 @@ model Document {
   fileName      String
   fileType      String
   fileSize      Int
-  filePath      String
-  fileData      Bytes?
+  filePath      String           // URL path to file (e.g., /uploads/userId/filename.pdf)
   status        String           @default("processing")
   uploadedAt    DateTime         @default(now())
   processedAt   DateTime?
   chunks        DocumentChunk[]
-  
+
   @@index([userId, uploadedAt])
 }
 
