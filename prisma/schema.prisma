@@ -104,6 +104,7 @@ model Document {
   fileType      String
   fileSize      Int
   filePath      String
+  fileData      Bytes?
   status        String           @default("processing")
   uploadedAt    DateTime         @default(now())
   processedAt   DateTime?
