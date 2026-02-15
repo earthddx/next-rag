@@ -31,7 +31,6 @@ import {
 } from "@/components/ai-elements/attachments";
 import { Suggestions, Suggestion } from "@/components/ai-elements/suggestion";
 import { FileTextIcon } from "lucide-react";
-import { processPdfFile } from "@/app/upload/actions";
 import { Loader } from "@/components/ai-elements/loader";
 
 const suggestions = [
@@ -111,7 +110,13 @@ export default function Chat() {
                     const formData = new FormData();
                     formData.set("pdf", file);
 
-                    const result = await processPdfFile(formData);
+                    // Call the API route directly
+                    const response = await fetch('/api/upload', {
+                        method: 'POST',
+                        body: formData,
+                    });
+
+                    const result = await response.json();
 
                     if (result.success) {
                         toast.success("PDF Processed", {
