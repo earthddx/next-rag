@@ -205,7 +205,7 @@ export default function Chat() {
             </Conversation>
 
             <div className="border-t p-4">
-                <Suggestions className="px-4 overflow-auto max-w-3xs md:max-w-3xl mx-auto">
+                <Suggestions className="px-4 overflow-auto max-w-3xs sm:max-w-3xl mx-auto">
                     {suggestions.map((suggestion) => (
                         <Suggestion
                             key={suggestion}

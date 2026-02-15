@@ -2,11 +2,11 @@
 
 import React from 'react';
 import Link from 'next/link';
-import Credentials from '@/components/custom/login/Credentials';
-import GoogleLoginButton from '@/components/custom/login/GoogleLoginButton';
-import GithubLoginButton from '@/components/custom/login/GithubLoginButton';
-import LogoBrand from '@/components/custom/LogoBrand';
-import Divider from '@/components/custom/Divider';
+import Credentials from '@/components/custom/login/credentials';
+import GoogleLoginButton from '@/components/custom/login/google-login-button';
+import GithubLoginButton from '@/components/custom/login/github-login-button';
+import LogoBrand from '@/components/custom/logo-brand';
+import Divider from '@/components/custom/divider';
 import { useRouter } from 'next/navigation';
 import { signIn } from 'next-auth/react';
 

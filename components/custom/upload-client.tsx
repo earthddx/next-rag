@@ -2,7 +2,7 @@
 
 import React, { useCallback, useRef, useState } from "react";
 import Link from "next/link";
-import { processPdfFile } from "./actions";
+import { processPdfFile } from "../../app/upload/actions";
 import {
     Attachments,
     Attachment,

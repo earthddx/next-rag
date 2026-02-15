@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 import { getServerSession } from 'next-auth';
 import { authConfig } from '@/lib/auth';
-import LoginClient from '@/components/custom/LoginClient';
+import LoginClient from '@/components/custom/login-client';
 
 export default async function LoginPage() {
   const session = await getServerSession(authConfig);

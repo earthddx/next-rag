@@ -2,7 +2,7 @@
 import { redirect } from 'next/navigation';
 import { getServerSession } from 'next-auth';
 import { authConfig } from '@/lib/auth';
-import SignupClient from '@/components/custom/SignupClient';
+import SignupClient from '@/components/custom/signup-client';
 
 export default async function SignupPage() {
     const session = await getServerSession(authConfig);
