@@ -161,6 +161,8 @@ export async function POST(req: NextRequest) {
           processedAt: new Date()
         },
       });
+    }, {
+      timeout: 30000, // 30 seconds timeout (increased from default 5s)
     });
 
     return NextResponse.json({
