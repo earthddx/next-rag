@@ -2,7 +2,7 @@
 This is a Retrieval-Augmented Generation (RAG) application built with Next.js 16 that allows users to upload PDFs, process them into vector embeddings, and chat with an AI about the document contents.
 
 ## Key Technologies:
- - Frontend: Next.js 16 (App Router), React 18, TypeScript, Tailwind CSS
+ - Frontend: Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS
  - Auth: NextAuth with OAuth
  - Database: PostgreSQL with Prisma ORM
  - Vector Search: pgvector extension in PostgreSQL
