@@ -1,9 +1,10 @@
 "use client";
 
 import React from "react";
-import { useChat } from "@ai-sdk/react";
+import { useChatSession } from "@/lib/hooks/useChatSession";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import type { UIMessage } from "ai";
 import {
     Conversation,
     ConversationContent,
@@ -22,6 +23,7 @@ import {
     PromptInputActionMenuContent,
     PromptInputActionAddAttachments,
     usePromptInputAttachments,
+    type PromptInputMessage,
 } from "@/components/ai-elements/prompt-input";
 import {
     Attachments,
@@ -87,15 +89,16 @@ export default function Chat() {
     const [isProcessingPdf, setIsProcessingPdf] = React.useState(false);
     const [previewPdf, setPreviewPdf] = React.useState<{ url: string; fileName: string } | null>(null);
 
-    const { messages, sendMessage, setMessages, status } = useChat();
+    const { messages, sendMessage, setMessages, status, sessionId, isLoadingSession, isStreaming, isReady, createNewSession } = useChatSession();
 
-    const isLoading = status === "streaming" || status === "submitted" || isProcessingPdf;
+    const isLoading = status === "streaming" || status === "submitted" || isProcessingPdf || isLoadingSession || isStreaming;
+    const canSendMessage = isReady && !isLoading;
 
     const handleSuggestionClick = (suggestion: string) => {
         sendMessage({ text: suggestion });
     };
 
-    const handleSubmit = async (message: any, event: React.FormEvent) => {
+    const handleSubmit = async (message: PromptInputMessage, event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
 
         // Handle PDF file uploads
@@ -103,17 +106,18 @@ export default function Chat() {
             setIsProcessingPdf(true);
 
             for (const fileData of message.files) {
-                const userMessageText = message.text || `Uploading file: ${fileData.filename}`;
-                const userMessage = {
+                const fileName = fileData.filename || 'unknown.pdf';
+                const userMessageText = message.text || `Uploading file: ${fileName}`;
+                const userMessage: UIMessage = {
                     id: crypto.randomUUID(),
                     role: "user" as const,
                     parts: [{ type: "text" as const, text: userMessageText }],
                 };
-                setMessages((prev) => [...prev, userMessage]);
+                setMessages((prev: UIMessage[]) => [...prev, userMessage]);
 
                 try {
                     // Convert base64 data URI to File object
-                    const file = await dataURItoFile(fileData.url, fileData.filename);
+                    const file = await dataURItoFile(fileData.url, fileName);
 
                     const formData = new FormData();
                     formData.set("pdf", file);
@@ -128,38 +132,38 @@ export default function Chat() {
 
                     if (result.success) {
                         toast.success("PDF Processed", {
-                            description: `Successfully processed ${fileData.filename}. ${result.chunksCreated} chunks created.`,
+                            description: `Successfully processed ${fileName}. ${result.chunksCreated} chunks created.`,
                         });
 
-                        const assistantMessage = {
+                        const assistantMessage: UIMessage = {
                             id: crypto.randomUUID(),
                             role: "assistant" as const,
                             parts: [{
                                 type: "text" as const,
-                                text: `✅ Successfully processed ${fileData.filename} (${result.chunksCreated} chunks created)`
+                                text: `✅ Successfully processed ${fileName} (${result.chunksCreated} chunks created)`
                             }],
                             // Store fileUrl in metadata for preview
                             metadata: {
                                 fileUrl: result.fileUrl,
-                                fileName: fileData.filename,
+                                fileName: fileName,
                                 isPdfUpload: true
                             }
                         };
-                        setMessages((prev) => [...prev, assistantMessage]);
+                        setMessages((prev: UIMessage[]) => [...prev, assistantMessage]);
                     } else {
                         toast.error("Upload Failed", {
                             description: result.error ?? "Failed to process PDF.",
                         });
 
-                        const errorMessage = {
+                        const errorMessage: UIMessage = {
                             id: crypto.randomUUID(),
                             role: "assistant" as const,
                             parts: [{
                                 type: "text" as const,
-                                text: `❌ Failed to process ${fileData.filename}: ${result.error || 'Unknown error'}`
+                                text: `❌ Failed to process ${fileName}: ${result.error || 'Unknown error'}`
                             }],
                         };
-                        setMessages((prev) => [...prev, errorMessage]);
+                        setMessages((prev: UIMessage[]) => [...prev, errorMessage]);
                     }
                 } catch (error) {
                     console.error("Error converting or processing file:", error);
@@ -167,15 +171,15 @@ export default function Chat() {
                         description: "Failed to process the PDF file.",
                     });
 
-                    const errorMessage = {
+                    const errorMessage: UIMessage = {
                         id: crypto.randomUUID(),
                         role: "assistant" as const,
                         parts: [{
                             type: "text" as const,
-                            text: `❌ Error processing ${fileData.filename}`
+                            text: `❌ Error processing ${fileName}`
                         }],
                     };
-                    setMessages((prev) => [...prev, errorMessage]);
+                    setMessages((prev: UIMessage[]) => [...prev, errorMessage]);
                 }
             }
 
@@ -193,21 +197,25 @@ export default function Chat() {
         <div className="flex flex-col h-[calc(100vh-6rem)]">
             <Conversation className="flex justify-center">
                 <ConversationContent className="max-w-3xl m-auto">
-                    {messages.length === 0 ? (
+                    {isLoadingSession ? (
+                        <div className="flex items-center justify-center h-full">
+                            <Loader />
+                        </div>
+                    ) : messages.length === 0 ? (
                         <ConversationEmptyState
                             title="Start a conversation"
                             description="Type a message or upload a PDF to begin"
                         />
                     ) : (
-                        messages.map((message) => (
+                        messages.map((message: UIMessage) => (
                             <Message key={message.id} from={message.role}>
                                 <MessageContent>
                                     {message.role === "assistant" ? (
                                         <div className="space-y-2">
                                             <MessageResponse>
                                                 {message.parts
-                                                    ?.filter((part) => part.type === "text")
-                                                    .map((part) => part.text)
+                                                    ?.filter((part: any) => part.type === "text")
+                                                    .map((part: any) => part.text)
                                                     .join("")}
                                             </MessageResponse>
                                             {/* Show preview button for PDF uploads */}
@@ -229,20 +237,20 @@ export default function Chat() {
                                         </div>
                                     ) : (
                                         message.parts
-                                            ?.filter((part) => part.type === "text")
-                                            .map((part) => part.text)
+                                            ?.filter((part: any) => part.type === "text")
+                                            .map((part: any) => part.text)
                                     )}
                                 </MessageContent>
                             </Message>
                         ))
                     )}
-                    {(status === "submitted" || status === "streaming" || isProcessingPdf) && <Loader />}
+                    {(status === "submitted" || status === "streaming" || isProcessingPdf || isStreaming) && <Loader />}
                 </ConversationContent>
                 <ConversationScrollButton />
             </Conversation>
 
             <div className="border-t p-4">
-                <Suggestions className="px-4 overflow-auto max-w-3xs sm:max-w-3xl mx-auto">
+                <Suggestions className="px-4 overflow-auto max-w-4xs sm:max-w-3xl mx-auto">
                     {suggestions.map((suggestion) => (
                         <Suggestion
                             key={suggestion}
@@ -264,8 +272,8 @@ export default function Chat() {
                         <PromptInputTextarea
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
-                            placeholder="Type your message or upload a PDF..."
-                            disabled={isLoading}
+                            placeholder={isLoadingSession ? "Loading session..." : "Type your message or upload a PDF..."}
+                            disabled={!canSendMessage}
                             rows={1}
                             className="flex-1"
                         />
@@ -278,7 +286,7 @@ export default function Chat() {
                                     </PromptInputActionMenuContent>
                                 </PromptInputActionMenu>
                             </PromptInputTools>
-                            <PromptInputSubmit disabled={isLoading} />
+                            <PromptInputSubmit disabled={!canSendMessage} />
                         </PromptInputFooter>
                     </PromptInput>
                 </div>
