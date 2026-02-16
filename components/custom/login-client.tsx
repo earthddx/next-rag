@@ -49,6 +49,10 @@ function LoginClient() {
         <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-slate-900 via-slate-800 to-slate-900 px-4">
             <div className="w-full max-w-md">
                 <LogoBrand />
+                <div className="text-center mb-8">
+                    <h1 className="text-3xl font-bold text-white mb-2">ChatDocs</h1>
+                    <p className="text-slate-400">Welcome Back</p>
+                </div>
 
                 {/* Login Form */}
                 <div className="bg-slate-800/50 backdrop-blur-xl rounded-2xl shadow-2xl p-8 border border-slate-700/50">

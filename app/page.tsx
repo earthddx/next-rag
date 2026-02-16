@@ -16,21 +16,21 @@ export default async function Home() {
       <main className="mx-auto flex min-h-screen max-w-4xl flex-col items-center justify-center px-6 text-center">
         {/* Badge / eyebrow */}
         <span className="mb-6 inline-flex items-center rounded-full border border-slate-700 bg-slate-800/60 px-4 py-1 text-sm text-slate-300 backdrop-blur">
-          Retrieval-Augmented Generation Playground
+          Powered by RAG Technology
         </span>
 
         {/* Hero */}
         <h1 className="mb-6 text-4xl font-semibold tracking-tight sm:text-5xl">
-          Chat with your own knowledge.
+          <span className="text-blue-400">ChatDocs</span>
           <br />
-          <span className="text-blue-400">Powered by RAG.</span>
+          Chat with your documents.
         </h1>
 
         {/* Description */}
         <p className="mb-10 max-w-2xl text-lg leading-8 text-slate-300">
-          This app lets you upload or connect your own data and ask questions
-          using an AI model grounded in your content.  
-          No hallucinations. Just answers backed by your sources.
+          Upload your PDFs and ask questions. ChatDocs uses AI to provide
+          accurate answers based exclusively on your documents.
+          No hallucinations. Just facts from your sources.
         </p>
 
         {/* CTA buttons */}
