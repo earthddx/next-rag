@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import Toolbar from '@/components/custom/toolbar'
+import Toolbar from '@/components/custom/Toolbar'
 
 // Mock next-auth/react
 const mockSignOut = vi.fn()
