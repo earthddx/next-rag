@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { chunkContent } from '../chunking'
+import { chunkContent } from '@/lib/chunking'
 
 describe('chunkContent', () => {
   it('splits text into chunks', async () => {
