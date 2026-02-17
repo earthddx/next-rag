@@ -71,14 +71,6 @@ function SignupClient() {
                     <LogoBrand size="sm" />
                     ChatDocs
                 </Link>
-                <div className="flex gap-4">
-                    <Link
-                        href="/login"
-                        className="rounded-xl border border-slate-600 px-5 py-2 text-sm font-semibold text-slate-200 transition hover:bg-slate-800"
-                    >
-                        Log in
-                    </Link>
-                </div>
             </nav>
             <div className="mx-auto flex min-h-[calc(100vh-80px)] w-full max-w-md flex-col items-center justify-center">
                 {/* Login Form */}

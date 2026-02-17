@@ -16,12 +16,6 @@ export default function AboutPage() {
         </Link>
         <div className="flex gap-4">
           <Link
-            href="/login"
-            className="rounded-xl border border-slate-600 px-5 py-2 text-sm font-semibold text-slate-200 transition hover:bg-slate-800"
-          >
-            Log in
-          </Link>
-          <Link
             href="/signup"
             className="rounded-xl bg-blue-500 px-5 py-2 text-sm font-semibold text-white transition hover:bg-blue-400"
           >
