@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import Toolbar from '@/components/custom/Toolbar'
@@ -9,6 +9,12 @@ vi.mock('next-auth/react', () => ({
   signOut: (...args: any[]) => mockSignOut(...args),
 }))
 
+// Mock next/navigation
+const mockPush = vi.fn()
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ push: mockPush }),
+}))
+
 // Mock next/image
 vi.mock('next/image', () => ({
   default: ({ src, alt, ...props }: any) => (
@@ -17,50 +23,90 @@ vi.mock('next/image', () => ({
   ),
 }))
 
+// Mock DocumentsDialog to avoid pulling in its dependencies
+vi.mock('@/components/custom/DocumentsDialog', () => ({
+  default: () => null,
+}))
+
+beforeEach(() => {
+  mockSignOut.mockClear()
+  mockPush.mockClear()
+})
+
+/** Helper: open the hamburger dropdown menu */
+async function openMenu(user: ReturnType<typeof userEvent.setup>) {
+  const menuButton = screen.getByRole('button', { name: 'Open menu' })
+  await user.click(menuButton)
+}
+
 describe('Toolbar', () => {
   it('renders the app name', () => {
-    render(<Toolbar userName="John" userImageSrc={null} />)
+    render(<Toolbar userName="John" userImageSrc={null} userEmail={null} />)
 
     expect(screen.getByText('ChatDocs')).toBeInTheDocument()
   })
 
-  it('displays a welcome message with the user name', () => {
-    render(<Toolbar userName="John" userImageSrc={null} />)
+  it('displays the user name in the dropdown menu', async () => {
+    const user = userEvent.setup()
+    render(<Toolbar userName="John" userImageSrc={null} userEmail="john@example.com" />)
 
-    expect(screen.getByText('Welcome Back, John!')).toBeInTheDocument()
+    await openMenu(user)
+
+    expect(screen.getByText('John')).toBeInTheDocument()
+    expect(screen.getByText('john@example.com')).toBeInTheDocument()
   })
 
-  it('displays a generic welcome message when no user name', () => {
-    render(<Toolbar userName={null} userImageSrc={null} />)
+  it('displays fallback "User" when no user name is provided', async () => {
+    const user = userEvent.setup()
+    render(<Toolbar userName={null} userImageSrc={null} userEmail={null} />)
 
-    expect(screen.getByText('Welcome Back!')).toBeInTheDocument()
+    await openMenu(user)
+
+    expect(screen.getByText('User')).toBeInTheDocument()
   })
 
-  it('renders the user avatar image when provided', () => {
-    render(<Toolbar userName="John" userImageSrc="https://example.com/avatar.jpg" />)
+  it('renders the avatar section when an image source is provided', async () => {
+    const user = userEvent.setup()
+    render(<Toolbar userName="John" userImageSrc="https://example.com/avatar.jpg" userEmail={null} />)
 
-    const img = screen.getByAltText("John's avatar")
-    expect(img).toBeInTheDocument()
-    expect(img).toHaveAttribute('src', 'https://example.com/avatar.jpg')
+    await openMenu(user)
+
+    // Radix AvatarImage is hidden until the image loads (never in jsdom),
+    // so the fallback is shown instead. Verify the avatar area renders.
+    const avatar = document.querySelector('[data-slot="avatar"]')
+    expect(avatar).toBeInTheDocument()
   })
 
-  it('renders initial letter fallback when no image but name exists', () => {
-    render(<Toolbar userName="John" userImageSrc={null} />)
+  it('renders initial letter fallback when no image but name exists', async () => {
+    const user = userEvent.setup()
+    render(<Toolbar userName="John" userImageSrc={null} userEmail={null} />)
+
+    await openMenu(user)
 
     expect(screen.getByText('J')).toBeInTheDocument()
   })
 
-  it('renders a Sign Out button', () => {
-    render(<Toolbar userName="John" userImageSrc={null} />)
+  it('renders a Sign Out menu item in the dropdown', async () => {
+    const user = userEvent.setup()
+    render(<Toolbar userName="John" userImageSrc={null} userEmail={null} />)
 
-    expect(screen.getByRole('button', { name: 'Sign Out' })).toBeInTheDocument()
+    await openMenu(user)
+
+    expect(screen.getByText('Sign Out')).toBeInTheDocument()
   })
 
-  it('calls signOut when Sign Out is clicked', async () => {
+  it('calls signOut after confirming in the sign-out dialog', async () => {
     const user = userEvent.setup()
-    render(<Toolbar userName="John" userImageSrc={null} />)
+    render(<Toolbar userName="John" userImageSrc={null} userEmail={null} />)
 
-    await user.click(screen.getByRole('button', { name: 'Sign Out' }))
+    // Open dropdown and click "Sign Out" menu item
+    await openMenu(user)
+    const signOutMenuItem = screen.getByText('Sign Out')
+    await user.click(signOutMenuItem)
+
+    // Confirmation dialog should appear – click the confirm button
+    const confirmButton = await screen.findByRole('button', { name: 'Sign Out' })
+    await user.click(confirmButton)
 
     expect(mockSignOut).toHaveBeenCalledTimes(1)
   })
