@@ -7,6 +7,15 @@ import { Menu, FileText, Info, LogOut } from "lucide-react";
 import LogoBrand from "@/components/custom/logo-brand";
 import DocumentsDialog from "@/components/custom/DocumentsDialog";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+    DialogFooter,
+} from "@/components/ui/dialog";
 import {
     DropdownMenu,
     DropdownMenuTrigger,
@@ -27,6 +36,7 @@ export default function Toolbar({
 }) {
     const router = useRouter();
     const [docsOpen, setDocsOpen] = useState(false);
+    const [signOutOpen, setSignOutOpen] = useState(false);
 
     return (
         <>
@@ -116,7 +126,7 @@ export default function Toolbar({
                             <DropdownMenuItem
                                 variant="destructive"
                                 className="cursor-pointer"
-                                onSelect={() => signOut()}
+                                onSelect={() => setSignOutOpen(true)}
                             >
                                 <LogOut className="size-4" />
                                 Sign Out
@@ -127,6 +137,33 @@ export default function Toolbar({
             </header>
 
             <DocumentsDialog open={docsOpen} onOpenChange={setDocsOpen} />
+
+            <Dialog open={signOutOpen} onOpenChange={setSignOutOpen}>
+                <DialogContent className="bg-slate-900 border-slate-700 text-slate-200 sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle className="text-slate-100">Sign Out</DialogTitle>
+                        <DialogDescription className="text-slate-400">
+                            Are you sure you want to sign out of your account?
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter className="gap-2 sm:gap-0">
+                        <Button
+                            variant="outline"
+                            className="border-slate-600 text-slate-700 hover:bg-slate-800"
+                            onClick={() => setSignOutOpen(false)}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            variant="destructive"
+                            onClick={() => signOut()}
+                        >
+                            <LogOut className="size-4 mr-2" />
+                            Sign Out
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </>
     );
 }
