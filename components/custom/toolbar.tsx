@@ -5,9 +5,9 @@ import Image from "next/image";
 export default function Toolbar({ userName, userImageSrc }: { userName: string | null | undefined, userImageSrc: string | null | undefined }) {
     return (
         <header
-            onClick={() => {
-                window.scrollTo({ top: 0, behavior: "smooth" })
-            }}
+            // onClick={() => {
+            //     window.scrollTo({ top: 0, behavior: "smooth" })
+            // }}
             className="flex sticky top-0 z-50 justify-between items-center p-2.5 bg-linear-to-br from-slate-900 via-slate-800 to-slate-900 shadow-lg rounded-b-lg max-w-3xl mx-auto">
             {/* Logo & App name */}
             <div className="flex items-center gap-4">
