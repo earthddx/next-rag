@@ -48,6 +48,13 @@ export default async function Home() {
           >
             Log in
           </Link>
+
+          <Link
+            href="/about"
+            className="rounded-xl border border-slate-600 px-8 py-3 text-base font-semibold text-slate-200 transition hover:bg-slate-800"
+          >
+            What is RAG?
+          </Link>
         </div>
 
         {/* Footer hint */}
