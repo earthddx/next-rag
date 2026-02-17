@@ -4,8 +4,8 @@ import Link from 'next/link';
 import Credentials from '@/components/custom/login/credentials';
 import GoogleLoginButton from '@/components/custom/login/google-login-button';
 import GithubLoginButton from '@/components/custom/login/github-login-button';
-import LogoBrand from '@/components/custom/logo-brand';
 import Divider from '@/components/custom/divider';
+import LogoBrand from '@/components/custom/logo-brand';
 import { useRouter } from 'next/navigation';
 import { signIn } from 'next-auth/react';
 
@@ -62,13 +62,25 @@ function SignupClient() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-slate-900 via-slate-800 to-slate-900 px-4">
-            <div className="w-full max-w-md">
-                <LogoBrand />
-                <div className="text-center mb-8">
-                    <h1 className="text-3xl font-bold text-white mb-2">ChatDocs</h1>
-                    <p className="text-slate-400">Create account</p>
+        <div className="min-h-screen bg-linear-to-br from-slate-900 via-slate-800 to-slate-900 px-4">
+            <nav className="mx-auto flex max-w-5xl items-center justify-between px-6 py-6">
+                <Link
+                    href="/"
+                    className="flex items-center gap-2 text-lg font-semibold text-blue-400 transition hover:text-blue-300"
+                >
+                    <LogoBrand size="sm" />
+                    ChatDocs
+                </Link>
+                <div className="flex gap-4">
+                    <Link
+                        href="/login"
+                        className="rounded-xl border border-slate-600 px-5 py-2 text-sm font-semibold text-slate-200 transition hover:bg-slate-800"
+                    >
+                        Log in
+                    </Link>
                 </div>
+            </nav>
+            <div className="mx-auto flex min-h-[calc(100vh-80px)] w-full max-w-md flex-col items-center justify-center">
                 {/* Login Form */}
                 <div className="bg-slate-800/50 backdrop-blur-xl rounded-2xl shadow-2xl p-8 border border-slate-700/50">
                     <Credentials
