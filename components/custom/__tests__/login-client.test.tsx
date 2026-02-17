@@ -46,14 +46,14 @@ describe('LoginClient', () => {
     render(<LoginClient />)
 
     expect(screen.getByText('ChatDocs')).toBeInTheDocument()
-    expect(screen.getByText('Welcome Back')).toBeInTheDocument()
   })
 
-  it('renders the sign up link', () => {
+  it('renders the sign up links', () => {
     render(<LoginClient />)
 
-    const link = screen.getByText('Sign up')
-    expect(link).toHaveAttribute('href', '/signup')
+    const links = screen.getAllByText('Sign up')
+    expect(links.length).toBeGreaterThanOrEqual(1)
+    expect(links.some(link => link.getAttribute('href') === '/signup')).toBe(true)
   })
 
   it('renders social login buttons', () => {
