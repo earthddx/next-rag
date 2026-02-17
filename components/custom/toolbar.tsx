@@ -1,6 +1,7 @@
 'use client';
 import { signOut } from "next-auth/react";
 import Image from "next/image";
+import LogoBrand from "@/components/custom/logo-brand";
 
 export default function Toolbar({ userName, userImageSrc }: { userName: string | null | undefined, userImageSrc: string | null | undefined }) {
     return (
@@ -15,11 +16,7 @@ export default function Toolbar({ userName, userImageSrc }: { userName: string |
             className="flex sticky top-0 z-50 justify-between items-center p-2.5 bg-linear-to-br from-slate-900 via-slate-800 to-slate-900 shadow-lg rounded-b-lg max-w-3xl mx-auto cursor-pointer">
             {/* Logo & App name */}
             <div className="flex items-center gap-4">
-                <div className="flex items-center justify-center w-14 h-14 bg-blue-600 rounded-xl">
-                    <svg className="w-9 h-9 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                    </svg>
-                </div>
+                <LogoBrand size="sm" />
                 <div>
                     <span className="block text-2xl font-extrabold text-slate-200">ChatDocs</span>
                     <span className="block text-sm text-slate-300">Welcome Back{userName ? `, ${userName}` : ""}!</span>
