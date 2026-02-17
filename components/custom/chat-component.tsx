@@ -255,7 +255,7 @@ const ConversationComponent = ({ messages, isLoadingSession, isProcessingPdf, is
 	status: ChatStatus
 }) => {
 
-	return <Conversation className="flex justify-center">
+	return <Conversation id="chat-conversation" className="flex justify-center">
 		<ConversationContent className="max-w-3xl m-auto">
 			{isLoadingSession ? (
 				<div className="flex items-center justify-center h-full">
