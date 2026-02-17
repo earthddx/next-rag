@@ -10,7 +10,7 @@ const ChatPage = async () => {
     const session = await getServerSession(authConfig);
 
     return <div>
-        <Toolbar userName={session?.user?.name} userImageSrc={session?.user?.image} />
+        <Toolbar userName={session?.user?.name} userImageSrc={session?.user?.image} userEmail={session?.user?.email} />
         <Chat />
     </div>
 };
