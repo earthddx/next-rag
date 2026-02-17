@@ -1,8 +1,12 @@
 import Link from "next/link";
 import Image from "next/image";
+import { getServerSession } from "next-auth";
+import { authConfig } from "@/lib/auth";
 import LogoBrand from "@/components/custom/logo-brand";
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  const session = await getServerSession(authConfig);
+  const isAuthenticated = !!session?.user;
   return (
     <div className="min-h-screen bg-linear-to-br from-slate-900 via-slate-800 to-slate-900 text-white">
       {/* Nav */}
@@ -15,12 +19,21 @@ export default function AboutPage() {
           ChatDocs
         </Link>
         <div className="flex gap-4">
-          <Link
-            href="/signup"
-            className="rounded-xl bg-blue-500 px-5 py-2 text-sm font-semibold text-white transition hover:bg-blue-400"
-          >
-            Get started
-          </Link>
+          {isAuthenticated ? (
+            <Link
+              href="/chatroom"
+              className="rounded-xl bg-blue-500 px-5 py-2 text-sm font-semibold text-white transition hover:bg-blue-400"
+            >
+              Back to Chat
+            </Link>
+          ) : (
+            <Link
+              href="/signup"
+              className="rounded-xl bg-blue-500 px-5 py-2 text-sm font-semibold text-white transition hover:bg-blue-400"
+            >
+              Get started
+            </Link>
+          )}
         </div>
       </nav>
 
@@ -215,16 +228,16 @@ export default function AboutPage() {
         {/* CTA */}
         <section className="text-center">
           <h2 className="mb-4 text-2xl font-semibold text-slate-100">
-            Ready to try it?
+            {isAuthenticated ? "Ready to chat?" : "Ready to try it?"}
           </h2>
           <p className="mb-8 text-slate-300">
             Upload your documents and start chatting with them in seconds.
           </p>
           <Link
-            href="/signup"
+            href={isAuthenticated ? "/chatroom" : "/signup"}
             className="inline-block rounded-xl bg-blue-500 px-8 py-3 text-base font-semibold text-white transition hover:bg-blue-400"
           >
-            Get started for free
+            {isAuthenticated ? "Back to Chat" : "Get started for free"}
           </Link>
         </section>
 
