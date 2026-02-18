@@ -173,15 +173,26 @@ export default function DocumentsDialog({
                       {new Date(doc.uploadedAt).toLocaleDateString()}
                     </p>
                   </div>
-                  <span
-                    className={`shrink-0 size-2.5 rounded-full ${doc.status === "completed"
-                        ? "bg-green-400"
-                        : doc.status === "failed"
-                          ? "bg-red-400"
-                          : "bg-yellow-400"
-                      }`}
-                    title={doc.status}
-                  />
+                  <span className="shrink-0 flex items-center gap-1.5">
+                    <span
+                      className={`size-2.5 rounded-full ${doc.status === "completed"
+                          ? "bg-green-400"
+                          : doc.status === "failed"
+                            ? "bg-red-400"
+                            : "bg-yellow-400"
+                        }`}
+                    />
+                    <span
+                      className={`hidden sm:inline text-xs capitalize ${doc.status === "completed"
+                          ? "text-green-400"
+                          : doc.status === "failed"
+                            ? "text-red-400"
+                            : "text-yellow-400"
+                        }`}
+                    >
+                      {doc.status}
+                    </span>
+                  </span>
                   <button
                     type="button"
                     onClick={() => setPreviewTarget(doc)}
