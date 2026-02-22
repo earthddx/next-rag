@@ -1,4 +1,7 @@
 # Next RAG Chat - PDF-based RAG Application
+
+[![Live Demo](https://img.shields.io/badge/Live-Demo-000?style=for-the-badge&logo=vercel&logoColor=white)](https://next-rag-beta.vercel.app/)
+
 This is a Retrieval-Augmented Generation (RAG) application built with Next.js 16 that allows users to upload PDFs, process them into vector embeddings, and chat with an AI about the document contents.
 
 ## Key Technologies:
