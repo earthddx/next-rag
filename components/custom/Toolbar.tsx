@@ -142,8 +142,21 @@ export default function Toolbar({
                 <DialogContent className="bg-slate-900 border-slate-700 text-slate-200 sm:max-w-md">
                     <DialogHeader>
                         <DialogTitle className="text-slate-100">Sign Out</DialogTitle>
-                        <DialogDescription className="text-slate-400">
-                            Are you sure you want to sign out of your account?
+                        <DialogDescription asChild>
+                            <div className="space-y-3 text-slate-400">
+                                <p>Are you sure you want to sign out? The following data will be permanently deleted:</p>
+                                <ul className="space-y-1 text-sm text-slate-300">
+                                    <li className="flex items-center gap-2">
+                                        <span className="size-1.5 rounded-full bg-red-400 shrink-0" />
+                                        All uploaded documents and their chunks
+                                    </li>
+                                    <li className="flex items-center gap-2">
+                                        <span className="size-1.5 rounded-full bg-red-400 shrink-0" />
+                                        All chat sessions and message history
+                                    </li>
+                                </ul>
+                                <p className="text-xs text-slate-500">This action cannot be undone.</p>
+                            </div>
                         </DialogDescription>
                     </DialogHeader>
                     <DialogFooter className="gap-2 sm:gap-0">
@@ -156,7 +169,11 @@ export default function Toolbar({
                         </Button>
                         <Button
                             variant="destructive"
-                            onClick={() => signOut()}
+                            onClick={async () => {
+                                await fetch("/api/user/data", { method: "DELETE" });
+                                localStorage.removeItem("currentSessionId");
+                                signOut();
+                            }}
                         >
                             <LogOut className="size-4 mr-2" />
                             Sign Out
