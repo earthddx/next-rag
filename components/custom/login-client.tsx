@@ -59,6 +59,10 @@ function LoginClient() {
             <div className="mx-auto flex min-h-[calc(100vh-80px)] w-full max-w-md flex-col items-center justify-center">
                 {/* Login Form */}
                 <div className="bg-slate-800/50 backdrop-blur-xl rounded-2xl shadow-2xl p-8 border border-slate-700/50">
+                    <div className="mb-6 text-center">
+                        <h1 className="text-2xl font-bold text-white">Welcome back</h1>
+                        <p className="mt-1 text-sm text-slate-400">Sign in to your ChatDocs account</p>
+                    </div>
                     <Credentials
                         error={error}
                         isLoading={loading}
