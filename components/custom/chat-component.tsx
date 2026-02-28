@@ -35,6 +35,7 @@ import {
 import { Suggestions, Suggestion } from "@/components/ai-elements/suggestion";
 import { FileTextIcon } from "lucide-react";
 import { Loader } from "@/components/ai-elements/loader";
+import { Progress } from "@/components/ui/progress";
 
 const suggestions = [
 	"What documents have been uploaded?",
@@ -50,9 +51,57 @@ type PdfMetadata = {
 };
 
 
+type UploadEvent = {
+	progress?: number;
+	label?: string;
+	result?: any;
+	error?: string
+};
+
+async function readUploadStream(
+	body: ReadableStream<Uint8Array>,
+	onProgress: (progress: number) => void,
+	onLabel: (label: string) => void,
+): Promise<any> {
+	const reader = body.getReader();
+	const decoder = new TextDecoder();
+
+	while (true) {
+		const { done, value } = await reader.read();
+		if (done) break;
+
+		const lines = decoder.decode(value, { stream: true }).split("\n");
+		for (const line of lines) {
+			if (!line.startsWith("data: ")) continue;
+			let event: UploadEvent;
+			try {
+				event = JSON.parse(line.slice(6));
+			} catch (e) {
+				console.warn("Skipping malformed SSE line:", line, e);
+				continue;
+			}
+
+			if (event.error) {
+				throw new Error(event.error);
+			}
+			if (event.progress !== undefined) {
+				onProgress(event.progress);
+			}
+			if (event.label) {
+				onLabel(event.label);
+			}
+			if (event.result) {
+				return event.result;
+			}
+		}
+	}
+}
+
 export default function Chat() {
 	const [input, setInput] = React.useState("");
 	const [isProcessingPdf, setIsProcessingPdf] = React.useState(false);
+	const [uploadProgress, setUploadProgress] = React.useState<number | null>(null);
+	const [uploadLabel, setUploadLabel] = React.useState("");
 	const [previewPdf, setPreviewPdf] = React.useState<{ url: string; fileName: string } | null>(null);
 
 	const { messages, sendMessage, setMessages, status, sessionId, isLoadingSession, isStreaming, isReady, createNewSession } = useChatSession();
@@ -88,64 +137,69 @@ export default function Chat() {
 					const formData = new FormData();
 					formData.set("pdf", file);
 
-					// Call the API route directly
-					const response = await fetch('/api/upload', {
-						method: 'POST',
-						body: formData,
+					// Stream progress events from the server
+					setUploadProgress(0);
+					setUploadLabel("Starting…");
+
+					const response = await fetch("/api/upload", {
+						method: "POST",
+						body: formData
 					});
 
-					const result = await response.json();
+					// Validation errors come back as plain JSON
+					if (!response.headers.get("content-type")?.includes("text/event-stream")) {
+						const json = await response.json();
+						throw new Error(json.error ?? "Upload failed");
+					}
 
-					if (result.success) {
+					const finalResult = await readUploadStream(
+						response.body!,
+						setUploadProgress,
+						setUploadLabel,
+					);
+
+					setUploadProgress(null);
+
+					if (finalResult?.success) {
 						toast.success("PDF Processed", {
-							description: `Successfully processed ${fileName}. ${result.chunksCreated} chunks created.`,
+							description: `Successfully processed ${fileName}. ${finalResult.chunksCreated} chunks created.`,
 						});
-
-						const assistantMessage: UIMessage = {
-							id: crypto.randomUUID(),
-							role: "assistant" as const,
-							parts: [{
-								type: "text" as const,
-								text: `✅ Successfully processed ${fileName} (${result.chunksCreated} chunks created)`
-							}],
-							// Store fileUrl in metadata for preview
-							metadata: {
-								fileUrl: result.fileUrl,
-								fileName: fileName,
-								isPdfUpload: true
-							}
-						};
-						setMessages((prev: UIMessage[]) => [...prev, assistantMessage]);
+						setMessages((prev: UIMessage[]) => [
+							...prev,
+							{
+								id: crypto.randomUUID(),
+								role: "assistant" as const,
+								parts: [{
+									type: "text" as const,
+									text: `✅ Successfully processed ${fileName} (${finalResult.chunksCreated} chunks created)`
+								}],
+								// Store fileUrl in metadata for preview
+								metadata: {
+									fileUrl: finalResult.fileUrl,
+									fileName,
+									isPdfUpload: true
+								},
+							},
+						]);
 					} else {
-						toast.error("Upload Failed", {
-							description: result.error ?? "Failed to process PDF.",
-						});
-
-						const errorMessage: UIMessage = {
-							id: crypto.randomUUID(),
-							role: "assistant" as const,
-							parts: [{
-								type: "text" as const,
-								text: `❌ Failed to process ${fileName}: ${result.error || 'Unknown error'}`
-							}],
-						};
-						setMessages((prev: UIMessage[]) => [...prev, errorMessage]);
+						throw new Error("Processing finished without a result");
 					}
 				} catch (error) {
+					setUploadProgress(null);
 					console.error("Error converting or processing file:", error);
-					toast.error("Error", {
-						description: "Failed to process the PDF file.",
-					});
-
-					const errorMessage: UIMessage = {
-						id: crypto.randomUUID(),
-						role: "assistant" as const,
-						parts: [{
-							type: "text" as const,
-							text: `❌ Error processing ${fileName}`
-						}],
-					};
-					setMessages((prev: UIMessage[]) => [...prev, errorMessage]);
+					const msg = error instanceof Error ? error.message : "Failed to process the PDF file.";
+					toast.error("Upload Failed", { description: msg });
+					setMessages((prev: UIMessage[]) => [
+						...prev,
+						{
+							id: crypto.randomUUID(),
+							role: "assistant" as const,
+							parts: [{
+								type: "text" as const,
+								text: `❌ Failed to process ${fileName}: ${msg}`
+							}],
+						},
+					]);
 				}
 			}
 
@@ -180,6 +234,15 @@ export default function Chat() {
 					))}
 				</Suggestions>
 				<div className="max-w-3xl mx-auto">
+					{uploadProgress !== null && (
+						<div className="mb-2 space-y-1">
+							<div className="flex items-center justify-between text-xs text-slate-400">
+								<span>{uploadLabel}</span>
+								<span>{uploadProgress}%</span>
+							</div>
+							<Progress value={uploadProgress} className="h-1.5" />
+						</div>
+					)}
 					<PromptInput
 						accept="application/pdf,.pdf"
 						onSubmit={handleSubmit}
