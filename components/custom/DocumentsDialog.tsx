@@ -91,7 +91,11 @@ export default function DocumentsDialog({
           </DialogHeader>
           <div className="flex-1 mx-6 mb-6 rounded-lg overflow-hidden border border-slate-700 bg-white">
             <iframe
-              src={previewTarget.filePath}
+              src={
+                ["application/vnd.openxmlformats-officedocument.wordprocessingml.document", "application/msword"].includes(previewTarget.fileType)
+                  ? `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(previewTarget.filePath)}`
+                  : previewTarget.filePath
+              }
               className="w-full h-full"
               title={`Preview of ${previewTarget.fileName}`}
             />
