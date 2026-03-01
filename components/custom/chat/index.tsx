@@ -23,6 +23,7 @@ import AttachmentsPreview from "./attachments-preview";
 import FilePreview from "./file-preview";
 import { PreviewFile } from "./types";
 import { dataURItoFile, readUploadStream } from "./utils";
+import { ACCEPTED_FILE_TYPES } from "@/lib/file-types";
 
 const suggestions = [
 	"What documents have been uploaded?",
@@ -190,7 +191,7 @@ export default function Chat() {
 						</div>
 					)}
 					<PromptInput
-						accept="application/pdf,.pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,.docx,application/msword,.doc"
+						accept={ACCEPTED_FILE_TYPES}
 						onSubmit={handleSubmit}
 						className="flex gap-2 items-end"
 					>

@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { FileText, Loader2, Trash2, Eye, ArrowLeft } from "lucide-react";
+import { WORD_MIME_TYPES } from "@/lib/file-types";
 
 interface Document {
   id: string;
@@ -92,7 +93,7 @@ export default function DocumentsDialog({
           <div className="flex-1 mx-6 mb-6 rounded-lg overflow-hidden border border-slate-700 bg-white">
             <iframe
               src={
-                ["application/vnd.openxmlformats-officedocument.wordprocessingml.document", "application/msword"].includes(previewTarget.fileType)
+                WORD_MIME_TYPES.includes(previewTarget.fileType)
                   ? `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(previewTarget.filePath)}`
                   : previewTarget.filePath
               }

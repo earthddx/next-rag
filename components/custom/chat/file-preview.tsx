@@ -3,11 +3,7 @@
 import React from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { PreviewFile } from "./types";
-
-export const WORD_MIME_TYPES = [
-    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-    "application/msword",
-];
+import { WORD_MIME_TYPES } from "@/lib/file-types";
 
 export default ({ previewFile, setPreviewFile }: {
     previewFile: PreviewFile | null;
