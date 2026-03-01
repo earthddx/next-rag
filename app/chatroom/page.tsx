@@ -1,6 +1,6 @@
 import { getServerSession } from "next-auth";
 import { authConfig, loginRequiredServer } from "@/lib/auth";
-import Chat from "@/components/custom/chat-component";
+import Chat from "@/components/custom/chat";
 import Toolbar from "@/components/custom/Toolbar";
 
 
