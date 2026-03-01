@@ -199,7 +199,7 @@ export default function Chat() {
 						<PromptInputTextarea
 							value={input}
 							onChange={(e) => setInput(e.target.value)}
-							placeholder={isLoadingSession ? "Loading session..." : "Type your message or upload a document (PDF, DOCX, DOC)..."}
+							placeholder={isLoadingSession ? "Loading session..." : "Type your message or upload a document (PDF, DOCX)..."}
 							disabled={!canSendMessage}
 							rows={1}
 							className="flex-1"

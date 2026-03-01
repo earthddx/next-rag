@@ -1,10 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import PDFParser from "pdf2json";
 import mammoth from "mammoth";
-import officeParser from "officeparser";
-import { writeFile, unlink } from "fs/promises";
-import os from "os";
-import path from "path";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authConfig } from "@/lib/auth";
@@ -16,13 +12,12 @@ import { ALLOWED_MIME_TYPES } from "@/lib/file-types";
 // Configuration
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
-type FileCategory = "pdf" | "docx" | "doc";
+type FileCategory = "pdf" | "docx";
 
 function getFileCategory(filename: string): FileCategory | null {
   const ext = filename.toLowerCase().match(/\.[^.]+$/)?.[0];
   if (ext === ".pdf") return "pdf";
   if (ext === ".docx") return "docx";
-  if (ext === ".doc") return "doc";
   return null;
 }
 
@@ -34,14 +29,10 @@ function validateMagicBytes(buffer: Buffer, category: FileCategory): boolean {
     // DOCX is a ZIP file (PK signature)
     return buffer[0] === 0x50 && buffer[1] === 0x4b;
   }
-  if (category === "doc") {
-    // DOC is an OLE2 Compound Document
-    return buffer[0] === 0xd0 && buffer[1] === 0xcf;
-  }
   return false;
 }
 
-async function extractText(buffer: Buffer, category: FileCategory, filename: string): Promise<string> {
+async function extractText(buffer: Buffer, category: FileCategory): Promise<string> {
   if (category === "pdf") {
     const pdfParser = new (PDFParser as any)(null, 1);
     return new Promise<string>((resolve, reject) => {
@@ -57,15 +48,6 @@ async function extractText(buffer: Buffer, category: FileCategory, filename: str
   if (category === "docx") {
     const result = await mammoth.extractRawText({ buffer });
     return result.value;
-  }
-  if (category === "doc") {
-    const tmpPath = path.join(os.tmpdir(), `${Date.now()}-${filename}`);
-    await writeFile(tmpPath, buffer);
-    try {
-      return (await officeParser.parseOffice(tmpPath)).toText();
-    } finally {
-      await unlink(tmpPath).catch(() => {});
-    }
   }
   throw new Error("Unsupported file type");
 }
@@ -98,7 +80,7 @@ export async function POST(req: NextRequest) {
 
   if (!ALLOWED_MIME_TYPES.includes(file.type)) {
     return NextResponse.json(
-      { success: false, error: "Invalid file type. Only PDF, DOCX, and DOC files are allowed" },
+      { success: false, error: "Invalid file type. Only PDF and DOCX files are allowed" },
       { status: 400 }
     );
   }
@@ -106,7 +88,7 @@ export async function POST(req: NextRequest) {
   const category = getFileCategory(file.name);
   if (!category) {
     return NextResponse.json(
-      { success: false, error: "Invalid file extension. Only .pdf, .docx, and .doc files are allowed" },
+      { success: false, error: "Invalid file extension. Only .pdf and .docx files are allowed" },
       { status: 400 }
     );
   }
@@ -160,10 +142,10 @@ export async function POST(req: NextRequest) {
         documentId = document.id;
 
         // 3. Parse document
-        const parseLabel = category === "pdf" ? "Parsing PDF…" : category === "docx" ? "Parsing DOCX…" : "Parsing DOC…";
+        const parseLabel = category === "pdf" ? "Parsing PDF…" : "Parsing DOCX…";
         send({ progress: 25, label: parseLabel });
 
-        const text = await extractText(buffer, category, fileName);
+        const text = await extractText(buffer, category);
 
         if (!text?.trim()) {
           throw new Error("No text content found in document");

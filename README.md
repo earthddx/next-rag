@@ -10,13 +10,13 @@ This is a Retrieval-Augmented Generation (RAG) application built with Next.js 16
  - **Database**: PostgreSQL with Prisma ORM
  - **Vector Search**: pgvector extension in PostgreSQL
  - **AI/LLM**: Vercel AI SDK, OpenAI, Anthropic (LangChain)
- - **Document Processing**: pdf2json (PDF), mammoth (DOCX), officeparser (DOC) for text extraction
+ - **Document Processing**: pdf2json (PDF), mammoth (DOCX) for text extraction
  - **File Storage**: Vercel Blob for document storage
  - **UI Components**: Radix UI, shadcn/ui components
 
 ## Core Features:
  - **Authentication** - OAuth-based user authentication
- - **Document Upload** - Upload PDF, DOCX, and DOC files (up to 10MB) with validation
+ - **Document Upload** - Upload PDF and DOCX files (up to 10MB) with validation
 
    ### Processing Pipeline:
  - Text extraction (format-specific parsers per file type)
