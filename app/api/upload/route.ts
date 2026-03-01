@@ -137,6 +137,7 @@ export async function POST(req: NextRequest) {
         // 1. Upload to Vercel Blob
         send({ progress: 10, label: "Uploading to storage…" });
         const timestamp = Date.now();
+        // Generate unique filename to avoid conflicts
         const sanitizedFileName = fileName.replace(/[^a-zA-Z0-9.-]/g, "_");
         const uniqueFileName = `${userId}/${timestamp}-${sanitizedFileName}`;
         const blob = await put(uniqueFileName, buffer, {
