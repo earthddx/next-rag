@@ -1,15 +1,74 @@
 import { NextRequest, NextResponse } from "next/server";
 import PDFParser from "pdf2json";
+import mammoth from "mammoth";
+import officeParser from "officeparser";
+import { writeFile, unlink } from "fs/promises";
+import os from "os";
+import path from "path";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authConfig } from "@/lib/auth";
 import { chunkContent } from "@/lib/chunking";
 import { generateEmbeddings } from "@/lib/embeddings";
 import { put } from "@vercel/blob";
+import { ALLOWED_MIME_TYPES } from "@/lib/file-types";
 
 // Configuration
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
-const ALLOWED_MIME_TYPES = ["application/pdf"];
+
+type FileCategory = "pdf" | "docx" | "doc";
+
+function getFileCategory(filename: string): FileCategory | null {
+  const ext = filename.toLowerCase().match(/\.[^.]+$/)?.[0];
+  if (ext === ".pdf") return "pdf";
+  if (ext === ".docx") return "docx";
+  if (ext === ".doc") return "doc";
+  return null;
+}
+
+function validateMagicBytes(buffer: Buffer, category: FileCategory): boolean {
+  if (category === "pdf") {
+    return buffer.subarray(0, 5).toString().startsWith("%PDF-");
+  }
+  if (category === "docx") {
+    // DOCX is a ZIP file (PK signature)
+    return buffer[0] === 0x50 && buffer[1] === 0x4b;
+  }
+  if (category === "doc") {
+    // DOC is an OLE2 Compound Document
+    return buffer[0] === 0xd0 && buffer[1] === 0xcf;
+  }
+  return false;
+}
+
+async function extractText(buffer: Buffer, category: FileCategory, filename: string): Promise<string> {
+  if (category === "pdf") {
+    const pdfParser = new (PDFParser as any)(null, 1);
+    return new Promise<string>((resolve, reject) => {
+      pdfParser.on("pdfParser_dataError", (errData: any) =>
+        reject(new Error(errData.parserError || "PDF parsing failed"))
+      );
+      pdfParser.on("pdfParser_dataReady", () =>
+        resolve(pdfParser.getRawTextContent())
+      );
+      pdfParser.parseBuffer(buffer);
+    });
+  }
+  if (category === "docx") {
+    const result = await mammoth.extractRawText({ buffer });
+    return result.value;
+  }
+  if (category === "doc") {
+    const tmpPath = path.join(os.tmpdir(), `${Date.now()}-${filename}`);
+    await writeFile(tmpPath, buffer);
+    try {
+      return (await officeParser.parseOffice(tmpPath)).toText();
+    } finally {
+      await unlink(tmpPath).catch(() => {});
+    }
+  }
+  throw new Error("Unsupported file type");
+}
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authConfig);
@@ -21,7 +80,7 @@ export async function POST(req: NextRequest) {
   }
 
   const formData = await req.formData();
-  const file = formData.get("pdf") as File;
+  const file = formData.get("file") as File;
 
   if (!file) {
     return NextResponse.json(
@@ -39,14 +98,15 @@ export async function POST(req: NextRequest) {
 
   if (!ALLOWED_MIME_TYPES.includes(file.type)) {
     return NextResponse.json(
-      { success: false, error: "Invalid file type. Only PDF files are allowed" },
+      { success: false, error: "Invalid file type. Only PDF, DOCX, and DOC files are allowed" },
       { status: 400 }
     );
   }
 
-  if (!file.name.toLowerCase().endsWith(".pdf")) {
+  const category = getFileCategory(file.name);
+  if (!category) {
     return NextResponse.json(
-      { success: false, error: "Invalid file extension. Only .pdf files are allowed" },
+      { success: false, error: "Invalid file extension. Only .pdf, .docx, and .doc files are allowed" },
       { status: 400 }
     );
   }
@@ -54,11 +114,9 @@ export async function POST(req: NextRequest) {
   const bytes = await file.arrayBuffer();
   const buffer = Buffer.from(bytes);
 
-  // Verify PDF magic bytes (PDF signature: %PDF-)
-  const pdfSignature = buffer.subarray(0, 5).toString();
-  if (!pdfSignature.startsWith("%PDF-")) {
+  if (!validateMagicBytes(buffer, category)) {
     return NextResponse.json(
-      { success: false, error: "Invalid PDF file format" },
+      { success: false, error: "Invalid file format" },
       { status: 400 }
     );
   }
@@ -79,12 +137,11 @@ export async function POST(req: NextRequest) {
         // 1. Upload to Vercel Blob
         send({ progress: 10, label: "Uploading to storage…" });
         const timestamp = Date.now();
-        // Generate unique filename to avoid conflicts
         const sanitizedFileName = fileName.replace(/[^a-zA-Z0-9.-]/g, "_");
         const uniqueFileName = `${userId}/${timestamp}-${sanitizedFileName}`;
         const blob = await put(uniqueFileName, buffer, {
           access: "public",
-          contentType: "application/pdf",
+          contentType: file.type,
         });
         const fileUrl = blob.url;
 
@@ -101,23 +158,15 @@ export async function POST(req: NextRequest) {
         });
         documentId = document.id;
 
-        // 3. Parse PDF
-        send({ progress: 25, label: "Parsing PDF…" });
+        // 3. Parse document
+        const parseLabel = category === "pdf" ? "Parsing PDF…" : category === "docx" ? "Parsing DOCX…" : "Parsing DOC…";
+        send({ progress: 25, label: parseLabel });
 
-        const pdfParser = new (PDFParser as any)(null, 1);
-        const text = await new Promise<string>((resolve, reject) => {
-          pdfParser.on("pdfParser_dataError", (errData: any) =>
-            reject(new Error(errData.parserError || "PDF parsing failed"))
-          );
-          pdfParser.on("pdfParser_dataReady", () =>
-            resolve(pdfParser.getRawTextContent())
-          );
-          pdfParser.parseBuffer(buffer);
-        });
+        const text = await extractText(buffer, category, fileName);
 
         if (!text?.trim()) {
-          throw new Error("No text content found in PDF");
-        } 
+          throw new Error("No text content found in document");
+        }
 
         // 4. Chunk content
         send({ progress: 50, label: "Splitting into chunks…" });
@@ -129,7 +178,7 @@ export async function POST(req: NextRequest) {
         const embeddings = await generateEmbeddings(chunks);
         if (embeddings.length !== chunks.length) throw new Error("Embedding count mismatch");
 
-        // 6.Save chunks and embeddings in a single transaction
+        // 6. Save chunks and embeddings in a single transaction
         send({ progress: 85, label: "Saving to database…" });
         await prisma.$transaction(
           async (tx) => {
@@ -166,7 +215,7 @@ export async function POST(req: NextRequest) {
           result: { success: true, documentId: document.id, chunksCreated: chunks.length, fileUrl },
         });
       } catch (error) {
-        console.error("PDF processing error:", error);
+        console.error("Document processing error:", error);
         if (documentId) {
           try {
             await prisma.document.update({
@@ -177,7 +226,7 @@ export async function POST(req: NextRequest) {
             console.error("Failed to update document status:", updateError);
           }
         }
-        const errorMessage = error instanceof Error ? error.message : "Failed to process PDF";
+        const errorMessage = error instanceof Error ? error.message : "Failed to process document";
         send({ error: errorMessage });
       } finally {
         controller.close();
