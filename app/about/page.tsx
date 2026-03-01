@@ -63,7 +63,7 @@ export default async function AboutPage() {
             fundamental limitation: they can only reference information from
             their training data. This means they have a knowledge cutoff and
             know nothing about your private documents, proprietary data, or
-            recent events. Ask an LLM about the contents of a PDF you uploaded
+            recent events. Ask an LLM about the contents of a document you uploaded
             yesterday, and it simply can&apos;t help.
           </p>
         </section>
