@@ -28,9 +28,13 @@ vi.mock('@/components/custom/DocumentsDialog', () => ({
   default: () => null,
 }))
 
+const mockFetch = vi.fn().mockResolvedValue({ ok: true })
+vi.stubGlobal('fetch', mockFetch)
+
 beforeEach(() => {
   mockSignOut.mockClear()
   mockPush.mockClear()
+  mockFetch.mockClear()
 })
 
 /** Helper: open the hamburger dropdown menu */

@@ -85,7 +85,11 @@ vi.mock('@/components/ui/dialog', () => ({
   DialogTitle: ({ children }: any) => <h2>{children}</h2>,
 }))
 
-import Chat from '../chat-component'
+vi.mock('@/components/ui/progress', () => ({
+  Progress: (props: any) => <div data-testid="progress" {...props} />,
+}))
+
+import Chat from '../chat'
 
 function defaultHookReturn(overrides: Partial<ReturnType<typeof mockUseChatSession>> = {}) {
   return {
@@ -203,7 +207,7 @@ describe('Chat', () => {
       expect(screen.getByTestId('message-response')).toBeInTheDocument()
     })
 
-    it('shows "View PDF" button for PDF upload messages', () => {
+    it('shows "View file" button for PDF upload messages', () => {
       mockUseChatSession.mockReturnValue(defaultHookReturn({
         messages: [
           {
@@ -217,10 +221,10 @@ describe('Chat', () => {
 
       render(<Chat />)
 
-      expect(screen.getByText('View PDF')).toBeInTheDocument()
+      expect(screen.getByText('View file')).toBeInTheDocument()
     })
 
-    it('does not show "View PDF" button for regular assistant messages', () => {
+    it('does not show "View file" button for regular assistant messages', () => {
       mockUseChatSession.mockReturnValue(defaultHookReturn({
         messages: [
           { id: '1', role: 'assistant', parts: [{ type: 'text', text: 'Just a response' }] },
@@ -229,7 +233,7 @@ describe('Chat', () => {
 
       render(<Chat />)
 
-      expect(screen.queryByText('View PDF')).not.toBeInTheDocument()
+      expect(screen.queryByText('View file')).not.toBeInTheDocument()
     })
   })
 
@@ -254,7 +258,7 @@ describe('Chat', () => {
       expect(mockSendMessage).toHaveBeenCalledWith({ text: 'Hello AI' })
     })
 
-    it('opens PDF preview dialog when "View PDF" is clicked', async () => {
+    it('opens PDF preview dialog when "View file" is clicked', async () => {
       const user = userEvent.setup()
       mockUseChatSession.mockReturnValue(defaultHookReturn({
         messages: [
@@ -269,7 +273,7 @@ describe('Chat', () => {
 
       render(<Chat />)
 
-      await user.click(screen.getByText('View PDF'))
+      await user.click(screen.getByText('View file'))
 
       expect(screen.getByTestId('dialog')).toBeInTheDocument()
       expect(screen.getByText('doc.pdf')).toBeInTheDocument()
