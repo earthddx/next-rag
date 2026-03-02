@@ -10,13 +10,30 @@ This is a Retrieval-Augmented Generation (RAG) application built with Next.js 16
  - **Database**: PostgreSQL with Prisma ORM
  - **Vector Search**: pgvector extension in PostgreSQL
  - **AI/LLM**: Vercel AI SDK, OpenAI, Anthropic (LangChain)
- - **Document Processing**: pdf2json (PDF), mammoth (DOCX) for text extraction
+ - **Document Processing**: pdf2json, mammoth, officeparser for multi-format text extraction
  - **File Storage**: Vercel Blob for document storage
  - **UI Components**: Radix UI, shadcn/ui components
 
 ## Core Features:
  - **Authentication** - OAuth-based user authentication
- - **Document Upload** - Upload PDF and DOCX files (up to 10MB) with validation
+ - **Document Upload** - Upload documents up to 10MB with MIME type, extension, and magic-byte validation
+
+   ### Supported File Formats:
+
+   | Format | Extension(s) | Parser |
+   |--------|-------------|--------|
+   | PDF | `.pdf` | pdf2json |
+   | Word | `.docx` | mammoth |
+   | Excel | `.xlsx` | officeparser |
+   | PowerPoint | `.pptx` | officeparser |
+   | OpenDocument Text | `.odt` | officeparser |
+   | OpenDocument Spreadsheet | `.ods` | officeparser |
+   | OpenDocument Presentation | `.odp` | officeparser |
+   | Rich Text Format | `.rtf` | officeparser |
+   | Plain Text | `.txt` | UTF-8 decode |
+   | CSV | `.csv` | UTF-8 decode |
+   | Markdown | `.md` | UTF-8 decode |
+   | HTML | `.html`, `.htm` | UTF-8 decode + tag strip |
 
    ### Processing Pipeline:
  - Text extraction (format-specific parsers per file type)
