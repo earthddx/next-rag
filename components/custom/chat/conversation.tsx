@@ -31,7 +31,7 @@ export default ({ messages, isLoadingSession, isProcessingFile, isStreaming, set
             ) : messages.length === 0 ? (
                 <ConversationEmptyState
                     title="Start a conversation"
-                    description="Type a message or upload a document (PDF, DOCX) to begin"
+                    description="Type a message or upload a document to begin"
                 />
             ) : (
                 messages.map((message: UIMessage) => (

@@ -28,7 +28,7 @@ export default async function Home() {
 
         {/* Description */}
         <p className="mb-10 max-w-2xl text-lg leading-8 text-slate-300">
-          Upload your PDFs, Word documents, and more — then ask questions.
+          Upload documents in any format — PDF, Word, Excel, PowerPoint, Markdown, CSV, and more — then ask questions.
           ChatDocs uses AI to provide accurate answers based exclusively on your documents.
           No hallucinations. Just facts from your sources.
         </p>
