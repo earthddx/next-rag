@@ -40,13 +40,9 @@ vi.mock('mammoth', () => ({
   default: { extractRawText: vi.fn() },
 }))
 
-vi.mock('officeparser', () => ({
-  default: { parseOfficeAsync: vi.fn() },
-}))
-
 import { POST } from '../route'
 import { getServerSession } from 'next-auth'
-import { MIME_PDF, MIME_DOCX, MIME_DOC } from '@/lib/file-types'
+import { MIME_PDF, MIME_DOCX } from '@/lib/file-types'
 
 beforeEach(() => {
   vi.clearAllMocks()
@@ -68,13 +64,6 @@ function makeDocxFile(name: string) {
   const docxHeader = new Uint8Array([0x50, 0x4b, 0x03, 0x04, ...new Array(26).fill(0)])
   const blob = new Blob([docxHeader], { type: MIME_DOCX })
   return new File([blob], name, { type: MIME_DOCX })
-}
-
-// Helper: create a fake DOC file with valid magic bytes (OLE2: D0CF11E0)
-function makeDocFile(name: string) {
-  const docHeader = new Uint8Array([0xd0, 0xcf, 0x11, 0xe0, ...new Array(26).fill(0)])
-  const blob = new Blob([docHeader], { type: MIME_DOC })
-  return new File([blob], name, { type: MIME_DOC })
 }
 
 function makeRequest(file: File) {
@@ -123,9 +112,7 @@ describe('POST /api/upload', () => {
       expires: '',
     })
 
-    // Create a Blob large enough to exceed 10MB
     const bigContent = new Uint8Array(11 * 1024 * 1024)
-    // Write PDF magic bytes at the start
     const pdfHeader = new TextEncoder().encode('%PDF-1.4 ')
     bigContent.set(pdfHeader, 0)
     const file = new File([bigContent], 'big.pdf', { type: MIME_PDF })
@@ -166,13 +153,26 @@ describe('POST /api/upload', () => {
     expect(body.error).toContain('Invalid file extension')
   })
 
+  it('returns 400 for .doc files (unsupported format)', async () => {
+    vi.mocked(getServerSession).mockResolvedValue({
+      user: { id: 'user-1', email: 'test@test.com' },
+      expires: '',
+    })
+
+    const file = new File(['data'], 'report.doc', { type: 'application/msword' })
+    const res = await POST(makeRequest(file))
+    const body = await res.json()
+
+    expect(res.status).toBe(400)
+    expect(body.error).toMatch(/Invalid file type|Invalid file extension/)
+  })
+
   it('returns 400 when PDF file has wrong magic bytes', async () => {
     vi.mocked(getServerSession).mockResolvedValue({
       user: { id: 'user-1', email: 'test@test.com' },
       expires: '',
     })
 
-    // File with .pdf name and correct mime, but not actual PDF content
     const file = new File(['not a real pdf'], 'fake.pdf', { type: MIME_PDF })
     const res = await POST(makeRequest(file))
     const body = await res.json()
@@ -202,19 +202,6 @@ describe('POST /api/upload', () => {
     })
 
     const file = makeDocxFile('report.docx')
-    const res = await POST(makeRequest(file))
-
-    // Should return a streaming response (not a JSON error)
-    expect(res.headers.get('content-type')).toContain('text/event-stream')
-  })
-
-  it('accepts a valid DOC file and begins streaming', async () => {
-    vi.mocked(getServerSession).mockResolvedValue({
-      user: { id: 'user-1', email: 'test@test.com' },
-      expires: '',
-    })
-
-    const file = makeDocFile('report.doc')
     const res = await POST(makeRequest(file))
 
     expect(res.headers.get('content-type')).toContain('text/event-stream')
