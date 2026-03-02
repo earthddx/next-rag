@@ -121,9 +121,11 @@
   }
   html {
     @apply bg-slate-900;
+    overscroll-behavior: none;
   }
   body {
     @apply bg-background text-foreground;
+    overscroll-behavior: none;
   }
 }
 
