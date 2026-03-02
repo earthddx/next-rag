@@ -11,7 +11,8 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { FileText, Loader2, Trash2, Eye, ArrowLeft } from "lucide-react";
-import { WORD_MIME_TYPES } from "@/lib/file-types";
+import { needsOfficeViewer, TEXT_PREVIEW_EXTENSIONS } from "@/lib/file-types";
+import { TextPreview, getExt } from "@/components/custom/text-preview";
 
 interface Document {
   id: string;
@@ -91,15 +92,18 @@ export default function DocumentsDialog({
             </div>
           </DialogHeader>
           <div className="flex-1 mx-6 mb-6 rounded-lg overflow-hidden border border-slate-700 bg-white">
-            <iframe
-              src={
-                WORD_MIME_TYPES.includes(previewTarget.fileType)
-                  ? `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(previewTarget.filePath)}`
-                  : previewTarget.filePath
-              }
-              className="w-full h-full"
-              title={`Preview of ${previewTarget.fileName}`}
-            />
+            {TEXT_PREVIEW_EXTENSIONS.has(getExt(previewTarget.fileName))
+              ? <TextPreview url={previewTarget.filePath} />
+              : <iframe
+                  src={
+                    needsOfficeViewer(previewTarget.fileName, previewTarget.fileType)
+                      ? `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(previewTarget.filePath)}`
+                      : previewTarget.filePath
+                  }
+                  className="w-full h-full"
+                  title={`Preview of ${previewTarget.fileName}`}
+                />
+            }
           </div>
         </DialogContent>
       </Dialog>
