@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import PDFParser from "pdf2json";
 import mammoth from "mammoth";
+import { OfficeParser } from "officeparser";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authConfig } from "@/lib/auth";
@@ -12,12 +13,22 @@ import { ALLOWED_MIME_TYPES } from "@/lib/file-types";
 // Configuration
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
-type FileCategory = "pdf" | "docx";
+type FileCategory = "pdf" | "docx" | "xlsx" | "pptx" | "odt" | "ods" | "odp" | "rtf" | "txt" | "csv" | "md" | "html";
 
 function getFileCategory(filename: string): FileCategory | null {
   const ext = filename.toLowerCase().match(/\.[^.]+$/)?.[0];
   if (ext === ".pdf") return "pdf";
   if (ext === ".docx") return "docx";
+  if (ext === ".xlsx") return "xlsx";
+  if (ext === ".pptx") return "pptx";
+  if (ext === ".odt") return "odt";
+  if (ext === ".ods") return "ods";
+  if (ext === ".odp") return "odp";
+  if (ext === ".rtf") return "rtf";
+  if (ext === ".txt") return "txt";
+  if (ext === ".csv") return "csv";
+  if (ext === ".md") return "md";
+  if (ext === ".html" || ext === ".htm") return "html";
   return null;
 }
 
@@ -25,11 +36,16 @@ function validateMagicBytes(buffer: Buffer, category: FileCategory): boolean {
   if (category === "pdf") {
     return buffer.subarray(0, 5).toString().startsWith("%PDF-");
   }
-  if (category === "docx") {
-    // DOCX is a ZIP file (PK signature)
+  if (category === "docx" || category === "xlsx" || category === "pptx" ||
+      category === "odt" || category === "ods" || category === "odp") {
+    // Office Open XML and OpenDocument formats are all ZIP files (PK signature)
     return buffer[0] === 0x50 && buffer[1] === 0x4b;
   }
-  return false;
+  if (category === "rtf") {
+    return buffer.subarray(0, 5).toString().startsWith("{\\rtf");
+  }
+  // Plain-text formats: rely on extension + MIME validation
+  return true;
 }
 
 async function extractText(buffer: Buffer, category: FileCategory): Promise<string> {
@@ -48,6 +64,18 @@ async function extractText(buffer: Buffer, category: FileCategory): Promise<stri
   if (category === "docx") {
     const result = await mammoth.extractRawText({ buffer });
     return result.value;
+  }
+  if (category === "xlsx" || category === "pptx" ||
+      category === "odt" || category === "ods" || category === "odp" ||
+      category === "rtf") {
+    const ast = await OfficeParser.parseOffice(buffer);
+    return ast.toText();
+  }
+  if (category === "txt" || category === "csv" || category === "md") {
+    return buffer.toString("utf-8");
+  }
+  if (category === "html") {
+    return buffer.toString("utf-8").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
   }
   throw new Error("Unsupported file type");
 }
@@ -80,7 +108,7 @@ export async function POST(req: NextRequest) {
 
   if (!ALLOWED_MIME_TYPES.includes(file.type)) {
     return NextResponse.json(
-      { success: false, error: "Invalid file type. Only PDF and DOCX files are allowed" },
+      { success: false, error: "Unsupported file type" },
       { status: 400 }
     );
   }
@@ -88,7 +116,7 @@ export async function POST(req: NextRequest) {
   const category = getFileCategory(file.name);
   if (!category) {
     return NextResponse.json(
-      { success: false, error: "Invalid file extension. Only .pdf and .docx files are allowed" },
+      { success: false, error: "Unsupported file extension" },
       { status: 400 }
     );
   }
@@ -142,7 +170,8 @@ export async function POST(req: NextRequest) {
         documentId = document.id;
 
         // 3. Parse document
-        const parseLabel = category === "pdf" ? "Parsing PDF…" : "Parsing DOCX…";
+        const parseLabels: Record<FileCategory, string> = { pdf: "Parsing PDF…", docx: "Parsing DOCX…", xlsx: "Parsing XLSX…", pptx: "Parsing PPTX…", odt: "Parsing ODT…", ods: "Parsing ODS…", odp: "Parsing ODP…", rtf: "Parsing RTF…", txt: "Reading text…", csv: "Reading CSV…", md: "Reading Markdown…", html: "Parsing HTML…" };
+        const parseLabel = parseLabels[category];
         send({ progress: 25, label: parseLabel });
 
         const text = await extractText(buffer, category);
