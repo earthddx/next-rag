@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { Menu, FileText, Info, LogOut, Settings } from "lucide-react";
+import { Menu, FileText, Info, LogOut, Settings, Sun, Moon } from "lucide-react";
+import { useTheme } from "next-themes";
 import LogoBrand from "@/components/custom/logo-brand";
 import DocumentsDialog from "@/components/custom/DocumentsDialog";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -35,6 +36,7 @@ export default function Toolbar({
     userEmail: string | null | undefined;
 }) {
     const router = useRouter();
+    const { theme, setTheme } = useTheme();
     const [docsOpen, setDocsOpen] = useState(false);
     const [signOutOpen, setSignOutOpen] = useState(false);
 
@@ -61,8 +63,16 @@ export default function Toolbar({
                     <span className="text-lg sm:text-2xl font-extrabold text-slate-200">ChatDocs</span>
                 </div>
 
-                {/* Hamburger Menu */}
-                <div className="shrink-0" onClick={(e) => e.stopPropagation()}>
+                {/* Hamburger Menu + Theme Toggle */}
+                <div className="shrink-0 flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                    <button
+                        type="button"
+                        onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                        className="p-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+                        aria-label="Toggle theme"
+                    >
+                        {theme === "dark" ? <Sun className="size-5" /> : <Moon className="size-5" />}
+                    </button>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <button
