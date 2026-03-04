@@ -46,6 +46,7 @@ export default function Chat() {
 	const canSendMessage = isReady && !isLoading;
 
 	const handleSuggestionClick = (suggestion: string) => {
+		if (!canSendMessage) return;
 		sendMessage({ text: suggestion });
 	};
 
@@ -177,6 +178,7 @@ export default function Chat() {
 							key={suggestion}
 							onClick={() => handleSuggestionClick(suggestion)}
 							suggestion={suggestion}
+							disabled={!canSendMessage}
 						/>
 					))}
 				</Suggestions>
