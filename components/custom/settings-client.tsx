@@ -1,10 +1,10 @@
 'use client';
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
 import Link from "next/link";
-import { ArrowLeft, Trash2 } from "lucide-react";
+import { ArrowLeft, Trash2, Check, Pencil, X, Camera } from "lucide-react";
 import LogoBrand from "@/components/custom/logo-brand";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -31,6 +31,63 @@ export default function SettingsClient({
     const router = useRouter();
     const [deleteOpen, setDeleteOpen] = useState(false);
     const [deleting, setDeleting] = useState(false);
+    const [displayName, setDisplayName] = useState(userName ?? "");
+    const [editingName, setEditingName] = useState(false);
+    const [nameInput, setNameInput] = useState(userName ?? "");
+    const [savingName, setSavingName] = useState(false);
+    const [nameError, setNameError] = useState("");
+    const [avatarSrc, setAvatarSrc] = useState(userImageSrc ?? "");
+    const [uploadingAvatar, setUploadingAvatar] = useState(false);
+    const [avatarError, setAvatarError] = useState("");
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    async function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        setAvatarError("");
+        setUploadingAvatar(true);
+        const form = new FormData();
+        form.append("file", file);
+        const res = await fetch("/api/user/avatar", { method: "POST", body: form });
+        setUploadingAvatar(false);
+        if (res.ok) {
+            const { image } = await res.json();
+            setAvatarSrc(image);
+        } else {
+            const { error } = await res.json().catch(() => ({ error: "Upload failed." }));
+            setAvatarError(error ?? "Upload failed.");
+        }
+        // Reset so the same file can be re-selected if needed
+        e.target.value = "";
+    }
+
+    async function handleSaveName() {
+        if (!nameInput.trim()) {
+            setNameError("Name cannot be empty.");
+            return;
+        }
+        setSavingName(true);
+        setNameError("");
+        const res = await fetch("/api/user/profile", {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name: nameInput.trim() }),
+        });
+        setSavingName(false);
+        if (res.ok) {
+            const { name } = await res.json();
+            setDisplayName(name);
+            setEditingName(false);
+        } else {
+            setNameError("Failed to save. Please try again.");
+        }
+    }
+
+    function handleCancelEdit() {
+        setNameInput(displayName);
+        setNameError("");
+        setEditingName(false);
+    }
 
     async function handleDeleteAccount() {
         setDeleting(true);
@@ -69,18 +126,94 @@ export default function SettingsClient({
                         Profile
                     </h2>
                     <div className="flex items-center gap-4">
-                        <Avatar size="lg">
-                            {userImageSrc ? (
-                                <AvatarImage src={userImageSrc} alt={userName ?? "User"} />
-                            ) : null}
-                            <AvatarFallback className="bg-slate-700 text-slate-200 text-lg">
-                                {userName ? userName.charAt(0).toUpperCase() : "U"}
-                            </AvatarFallback>
-                        </Avatar>
-                        <div className="min-w-0">
-                            <p className="text-base font-medium text-slate-100 truncate">
-                                {userName ?? "No name set"}
-                            </p>
+                        {/* Clickable avatar upload zone */}
+                        <button
+                            type="button"
+                            onClick={() => fileInputRef.current?.click()}
+                            disabled={uploadingAvatar}
+                            className="relative shrink-0 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 group"
+                            aria-label="Change profile picture"
+                        >
+                            <Avatar size="lg">
+                                {avatarSrc ? (
+                                    <AvatarImage src={avatarSrc} alt={displayName || "User"} />
+                                ) : null}
+                                <AvatarFallback className="bg-slate-700 text-slate-200 text-lg">
+                                    {displayName ? displayName.charAt(0).toUpperCase() : "U"}
+                                </AvatarFallback>
+                            </Avatar>
+                            <span className="absolute inset-0 flex items-center justify-center rounded-full bg-black/50 opacity-0 transition group-hover:opacity-100">
+                                {uploadingAvatar
+                                    ? <span className="size-4 rounded-full border-2 border-white border-t-transparent animate-spin" />
+                                    : <Camera className="size-4 text-white" />
+                                }
+                            </span>
+                        </button>
+                        <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept="image/jpeg,image/png,image/webp,image/gif"
+                            className="hidden"
+                            onChange={handleAvatarChange}
+                        />
+                        {avatarError && (
+                            <p className="text-xs text-red-400 -mt-2">{avatarError}</p>
+                        )}
+                        <div className="min-w-0 flex-1">
+                            {editingName ? (
+                                <div className="space-y-1">
+                                    <div className="flex items-center gap-2">
+                                        <input
+                                            autoFocus
+                                            type="text"
+                                            value={nameInput}
+                                            onChange={(e) => setNameInput(e.target.value)}
+                                            onKeyDown={(e) => {
+                                                if (e.key === "Enter") handleSaveName();
+                                                if (e.key === "Escape") handleCancelEdit();
+                                            }}
+                                            className="flex-1 rounded-lg border border-slate-600 bg-slate-900 px-3 py-1.5 text-sm text-slate-100 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={handleSaveName}
+                                            disabled={savingName}
+                                            className="p-1.5 rounded-lg text-green-400 hover:bg-slate-700 disabled:opacity-50 transition"
+                                            aria-label="Save name"
+                                        >
+                                            <Check className="size-4" />
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={handleCancelEdit}
+                                            className="p-1.5 rounded-lg text-slate-400 hover:bg-slate-700 transition"
+                                            aria-label="Cancel"
+                                        >
+                                            <X className="size-4" />
+                                        </button>
+                                    </div>
+                                    {nameError && (
+                                        <p className="text-xs text-red-400">{nameError}</p>
+                                    )}
+                                </div>
+                            ) : (
+                                <div className="flex items-center gap-2">
+                                    <p className="text-base font-medium text-slate-100 truncate">
+                                        {displayName || "No name set"}
+                                    </p>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setNameInput(displayName);
+                                            setEditingName(true);
+                                        }}
+                                        className="p-1 rounded text-slate-500 hover:text-slate-300 hover:bg-slate-700 transition"
+                                        aria-label="Edit name"
+                                    >
+                                        <Pencil className="size-3.5" />
+                                    </button>
+                                </div>
+                            )}
                             <p className="text-sm text-slate-400 truncate">{userEmail}</p>
                         </div>
                     </div>

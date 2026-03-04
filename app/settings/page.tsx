@@ -10,17 +10,16 @@ export default async function SettingsPage() {
 
     const userId = (session.user as any).id as string;
 
-    // Check if this user has a password (credentials-based account)
     const dbUser = await prisma.user.findUnique({
         where: { id: userId },
-        select: { password: true },
+        select: { name: true, email: true, image: true, password: true },
     });
 
     return (
         <SettingsClient
-            userName={session.user.name}
-            userEmail={session.user.email}
-            userImageSrc={session.user.image}
+            userName={dbUser?.name}
+            userEmail={dbUser?.email}
+            userImageSrc={dbUser?.image}
             hasPassword={!!dbUser?.password}
         />
     );
