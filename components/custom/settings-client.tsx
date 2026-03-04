@@ -53,6 +53,7 @@ export default function SettingsClient({
         if (res.ok) {
             const { image } = await res.json();
             setAvatarSrc(image);
+            router.refresh();
         } else {
             const { error } = await res.json().catch(() => ({ error: "Upload failed." }));
             setAvatarError(error ?? "Upload failed.");
@@ -78,6 +79,7 @@ export default function SettingsClient({
             const { name } = await res.json();
             setDisplayName(name);
             setEditingName(false);
+            router.refresh();
         } else {
             setNameError("Failed to save. Please try again.");
         }
