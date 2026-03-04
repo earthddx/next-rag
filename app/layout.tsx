@@ -17,6 +17,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "ChatDocs",
   description: "Chat with your documents",
+  icons: {
+    icon: '/favicon.svg',
+  },
 };
 
 export default function RootLayout({
