@@ -67,8 +67,8 @@ function LoginClient() {
                     <Divider />
                     {/* Social Login Buttons */}
                     <div className="grid grid-cols-2 gap-4">
-                        <GoogleLoginButton />
-                        <GithubLoginButton />
+                        <GoogleLoginButton isLoading={loading} onLoadingChange={setLoading} />
+                        <GithubLoginButton isLoading={loading} onLoadingChange={setLoading} />
                     </div>
                 </div>
                 {/* Sign Up Link */}

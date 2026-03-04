@@ -1,12 +1,15 @@
 'use client';
-import React, { useState } from 'react';
+import React from 'react';
 import { signIn } from 'next-auth/react';
 
-function GithubLoginButton() {
-  const [loading, setLoading] = useState(false);
+interface GithubLoginButtonProps {
+  isLoading: boolean;
+  onLoadingChange: (loading: boolean) => void;
+}
 
+function GithubLoginButton({ isLoading, onLoadingChange }: GithubLoginButtonProps) {
   const handleClick = async () => {
-    setLoading(true);
+    onLoadingChange(true);
     await signIn('github', { callbackUrl: '/chatroom' });
   };
 
@@ -14,10 +17,10 @@ function GithubLoginButton() {
     <button
       type="button"
       onClick={handleClick}
-      disabled={loading}
+      disabled={isLoading}
       className="flex items-center justify-center px-4 py-3 border border-slate-600 rounded-lg transition text-slate-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-700/50 disabled:hover:bg-transparent"
     >
-      {loading ? (
+      {isLoading ? (
         <svg className="w-5 h-5 mr-2 animate-spin" fill="none" viewBox="0 0 24 24">
           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
