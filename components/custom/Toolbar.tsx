@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { Menu, FileText, Info, LogOut } from "lucide-react";
+import { Menu, FileText, Info, LogOut, Settings } from "lucide-react";
 import LogoBrand from "@/components/custom/logo-brand";
 import DocumentsDialog from "@/components/custom/DocumentsDialog";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -109,6 +109,15 @@ export default function Toolbar({
                             >
                                 <FileText className="size-4" />
                                 My Documents
+                            </DropdownMenuItem>
+
+                            {/* Settings */}
+                            <DropdownMenuItem
+                                className="cursor-pointer text-slate-200 focus:bg-slate-800 focus:text-white"
+                                onSelect={() => router.push("/settings")}
+                            >
+                                <Settings className="size-4" />
+                                Settings
                             </DropdownMenuItem>
 
                             {/* About */}
