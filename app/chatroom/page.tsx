@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { getServerSession } from "next-auth";
 import { authConfig, loginRequiredServer } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
