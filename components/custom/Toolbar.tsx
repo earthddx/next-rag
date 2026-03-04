@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Menu, FileText, Info, LogOut, Settings, Sun, Moon } from "lucide-react";
@@ -37,7 +37,10 @@ export default function Toolbar({
 }) {
     const router = useRouter();
     const { theme, setTheme } = useTheme();
+    const [mounted, setMounted] = useState(false);
     const [docsOpen, setDocsOpen] = useState(false);
+
+    useEffect(() => { setMounted(true); }, []);
     const [signOutOpen, setSignOutOpen] = useState(false);
 
     return (
@@ -71,7 +74,7 @@ export default function Toolbar({
                         className="p-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
                         aria-label="Toggle theme"
                     >
-                        {theme === "dark" ? <Sun className="size-5" /> : <Moon className="size-5" />}
+                        {mounted && theme === "dark" ? <Sun className="size-5" /> : <Moon className="size-5" />}
                     </button>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
