@@ -7,23 +7,14 @@ interface CredentialsFormProps {
     mode: "login" | "signup";
     onSubmit: (e: React.FormEvent<HTMLFormElement>) => Promise<void>;
     isLoading: boolean;
-    error: string;
 }
 
-export default (props: CredentialsFormProps) => {
-    const { mode, onSubmit, isLoading, error } = props;
+export default function Credentials({ mode, onSubmit, isLoading }: CredentialsFormProps) {
     const isLogin = mode === "login";
 
     return (
         <form onSubmit={onSubmit}>
             <div className="space-y-6">
-                {/* Error Message */}
-                {error && (
-                    <div className="bg-red-500/10 border border-red-500/50 rounded-lg p-4">
-                        <p className="text-red-400 text-sm">{error}</p>
-                    </div>
-                )}
-
                 {/* Email Input */}
                 <div>
                     <label htmlFor="email" className="block text-sm font-medium text-slate-300 mb-2">
@@ -34,7 +25,8 @@ export default (props: CredentialsFormProps) => {
                         type="email"
                         name="email"
                         required
-                        className="w-full px-4 py-3 bg-slate-900/50 border border-slate-600 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                        disabled={isLoading}
+                        className="w-full px-4 py-3 bg-slate-900/50 border border-slate-600 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition disabled:opacity-50 disabled:cursor-not-allowed"
                         placeholder="you@example.com"
                     />
                 </div>
@@ -49,7 +41,8 @@ export default (props: CredentialsFormProps) => {
                         type="password"
                         name="password"
                         required
-                        className="w-full px-4 py-3 bg-slate-900/50 border border-slate-600 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                        disabled={isLoading}
+                        className="w-full px-4 py-3 bg-slate-900/50 border border-slate-600 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition disabled:opacity-50 disabled:cursor-not-allowed"
                         placeholder="••••••••"
                     />
                 </div>
@@ -65,7 +58,8 @@ export default (props: CredentialsFormProps) => {
                             type="password"
                             name="confirmPassword"
                             required
-                            className="w-full px-4 py-3 bg-slate-900/50 border border-slate-600 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                            disabled={isLoading}
+                            className="w-full px-4 py-3 bg-slate-900/50 border border-slate-600 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition disabled:opacity-50 disabled:cursor-not-allowed"
                             placeholder="••••••••"
                         />
                     </div>
@@ -78,18 +72,19 @@ export default (props: CredentialsFormProps) => {
                             <input
                                 id="remember"
                                 type="checkbox"
-                                className="w-4 h-4 bg-slate-900 border-slate-600 rounded text-blue-600 focus:ring-blue-500 focus:ring-2"
+                                disabled={isLoading}
+                                className="w-4 h-4 bg-slate-900 border-slate-600 rounded text-blue-600 focus:ring-blue-500 focus:ring-2 disabled:opacity-50 disabled:cursor-not-allowed"
                             />
-                            <label htmlFor="remember" className="ml-2 text-sm text-slate-400">
+                            <label htmlFor="remember" className={`ml-2 text-sm text-slate-400 ${isLoading ? 'opacity-50' : ''}`}>
                                 Remember me
                             </label>
                         </div>
-                        <Link 
+                        <Link
                             href="/forgot-password"
                             className={`text-sm transition ${
-                                isLoading 
-                                    ? "pointer-events-none opacity-50 text-slate-500" 
-                                    : "text-blue-400 hover:text-blue-300"
+                                isLoading
+                                    ? 'pointer-events-none opacity-50 text-slate-500'
+                                    : 'text-blue-400 hover:text-blue-300'
                             }`}
                         >
                             Forgot password?

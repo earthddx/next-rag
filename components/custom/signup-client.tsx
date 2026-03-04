@@ -8,23 +8,18 @@ import Divider from '@/components/custom/divider';
 import LogoBrand from '@/components/custom/logo-brand';
 import { useRouter } from 'next/navigation';
 import { signIn } from 'next-auth/react';
+import { toast } from 'sonner';
 
 function SignupClient() {
-
     const router = useRouter();
-    const [error, setError] = React.useState('');
     const [loading, setLoading] = React.useState(false);
 
     const handleSignup = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        setError('');
         setLoading(true);
-
 
         try {
             const data = new FormData(e.currentTarget);
-            console.log(data.get("email"))
-            console.log(data.get("password"))
             // Create account
             const response = await fetch('/api/auth/signup', {
                 method: 'POST',
@@ -50,12 +45,10 @@ function SignupClient() {
                 router.push("/chatroom");
                 router.refresh();
             } else {
-                console.log("Error: ", signInResponse);
-                setError("Incorrect email or password. Please check your credentials and try again.");
-                setLoading(false)
+                toast.error("Sign in after signup failed. Please try logging in.");
             }
         } catch (error: any) {
-            setError(error.message);
+            toast.error(error.message);
         } finally {
             setLoading(false);
         }
@@ -73,14 +66,13 @@ function SignupClient() {
                 </Link>
             </nav>
             <div className="mx-auto flex min-h-[calc(100vh-80px)] w-full max-w-md flex-col items-center justify-center">
-                {/* Login Form */}
-                <div className="bg-slate-800/50 backdrop-blur-xl rounded-2xl shadow-2xl p-8 border border-slate-700/50">
+                {/* Signup Form */}
+                <div className="w-full bg-slate-800/50 backdrop-blur-xl rounded-2xl shadow-2xl p-8 border border-slate-700/50">
                     <div className="mb-6 text-center">
                         <h1 className="text-2xl font-bold text-white">Create an account</h1>
                         <p className="mt-1 text-sm text-slate-400">Get started with ChatDocs for free</p>
                     </div>
                     <Credentials
-                        error={error}
                         isLoading={loading}
                         mode={"signup"}
                         onSubmit={handleSignup}
@@ -92,7 +84,7 @@ function SignupClient() {
                         <GithubLoginButton />
                     </div>
                 </div>
-                {/* Sign Up Link */}
+                {/* Log In Link */}
                 <p className="text-center mt-6 text-slate-400">
                     Have an account?{' '}
                     <Link href="/login" className="text-blue-400 hover:text-blue-300 font-semibold transition">
