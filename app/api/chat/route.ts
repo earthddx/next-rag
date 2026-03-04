@@ -50,7 +50,7 @@ export async function POST(req: Request) {
             6. If the answer is not in the knowledge base, say "Sorry, I don't know." - DO NOT make up answers or use general knowledge
 
             Your ONLY source of truth is the searchKnowledgeBase tool results. Nothing else.`,
-            stopWhen: stepCountIs(2),
+            stopWhen: stepCountIs(5),
             tools: {
                 searchKnowledgeBase: tool({
                     description: `Search the knowledge base for information relevant to the user's question. 
