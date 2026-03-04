@@ -4,7 +4,7 @@ import { streamText, UIMessage, convertToModelMessages, tool, InferUITools, UIDa
 import { z } from 'zod';
 import { getServerSession } from "next-auth";
 import { authConfig } from '@/lib/auth';
-import { NextResponse, NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
 
@@ -43,10 +43,11 @@ export async function POST(req: Request) {
 
             CRITICAL RULES - NO EXCEPTIONS:
             1. ALWAYS use the searchKnowledgeBase tool first for EVERY question
-            2. If search returns "No relevant information found", you MUST respond EXACTLY with: "Sorry, I don't know."
-            3. You are FORBIDDEN from using your general knowledge, training data, or any information outside the search results
-            4. This applies to ALL questions - coding, general knowledge, weather, math, EVERYTHING
-            5. If the answer is not in the knowledge base, say "Sorry, I don't know." - DO NOT make up answers or use general knowledge
+            2. If search returns "No relevant information found", respond with: "Sorry, I don't know."
+            3. If search returns "Documents are still being processed", tell the user their documents are still indexing and to try again in a moment.
+            4. You are FORBIDDEN from using your general knowledge, training data, or any information outside the search results
+            5. This applies to ALL questions - coding, general knowledge, weather, math, EVERYTHING
+            6. If the answer is not in the knowledge base, say "Sorry, I don't know." - DO NOT make up answers or use general knowledge
 
             Your ONLY source of truth is the searchKnowledgeBase tool results. Nothing else.`,
             stopWhen: stepCountIs(2),
@@ -64,6 +65,12 @@ export async function POST(req: Request) {
                             console.log('📊 Search results:', results.length, 'found');
 
                             if (!results.length) {
+                                const processingCount = await prisma.document.count({
+                                    where: { userId, status: "processing" }
+                                });
+                                if (processingCount > 0) {
+                                    return "Documents are still being processed. Please wait a moment and try again.";
+                                }
                                 return "No relevant information found in the knowledge base"
                             }
 
