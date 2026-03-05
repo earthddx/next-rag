@@ -41,4 +41,5 @@ This is a Retrieval-Augmented Generation (RAG) application built with Next.js 16
  - Embedding generation
  - Vector storage in PostgreSQL with pgvector
  - **Chat Interface** - Query documents using semantic search + LLM responses
+ - **Export Chat History** - Download full conversation history as a JSON file
  - **Multi-user Support** - User-specific documents and sessions
