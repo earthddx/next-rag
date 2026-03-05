@@ -24,7 +24,7 @@ vi.mock('next/image', () => ({
 }))
 
 // Mock DocumentsDialog to avoid pulling in its dependencies
-vi.mock('@/components/custom/DocumentsDialog', () => ({
+vi.mock('@/components/custom/documents-dialog', () => ({
   default: () => null,
 }))
 

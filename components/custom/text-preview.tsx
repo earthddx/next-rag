@@ -19,7 +19,7 @@ export function TextPreview({ url }: { url: string }) {
   if (error) return <p className="p-4 text-sm text-red-400">Failed to load content.</p>;
   if (!content) return <p className="p-4 text-sm text-slate-400">Loading…</p>;
   return (
-    <pre className="w-full h-full overflow-auto p-4 text-sm font-mono text-slate-900 whitespace-pre-wrap wrap-break-word">
+    <pre className="w-full h-full overflow-auto p-4 text-sm font-mono text-slate-900 dark:text-slate-100 whitespace-pre-wrap wrap-break-word">
       {content}
     </pre>
   );

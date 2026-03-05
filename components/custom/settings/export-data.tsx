@@ -45,7 +45,7 @@ export default () => {
             <Button
                 variant="outline"
                 size="sm"
-                className="shrink-0 border-slate-600 text-slate-200 hover:bg-slate-700"
+                className="shrink-0 bg-slate-800! border-slate-600! text-slate-200! hover:bg-slate-700! hover:text-slate-100!"
                 onClick={handleExport}
                 disabled={exporting}
             >

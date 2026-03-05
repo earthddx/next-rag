@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { Menu, FileText, Info, LogOut, Settings, Sun, Moon } from "lucide-react";
 import { useTheme } from "next-themes";
 import LogoBrand from "@/components/custom/logo-brand";
-import DocumentsDialog from "@/components/custom/DocumentsDialog";
+import DocumentsDialog from "@/components/custom/documents-dialog";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {

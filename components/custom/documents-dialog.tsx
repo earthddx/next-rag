@@ -30,13 +30,13 @@ function formatFileSize(bytes: number) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-export default function DocumentsDialog({
+export default ({
   open,
   onOpenChange,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-}) {
+}) => {
   const [documents, setDocuments] = React.useState<Document[]>([]);
   const [loading, setLoading] = React.useState(false);
   const [deleteTarget, setDeleteTarget] = React.useState<Document | null>(null);
@@ -91,18 +91,18 @@ export default function DocumentsDialog({
               </DialogTitle>
             </div>
           </DialogHeader>
-          <div className="flex-1 mx-6 mb-6 rounded-lg overflow-hidden border border-slate-700 bg-white">
+          <div className="flex-1 mx-6 mb-6 rounded-lg overflow-hidden border border-slate-700 bg-white dark:bg-slate-950">
             {TEXT_PREVIEW_EXTENSIONS.has(getExt(previewTarget.fileName))
               ? <TextPreview url={previewTarget.filePath} />
               : <iframe
-                  src={
-                    needsOfficeViewer(previewTarget.fileName, previewTarget.fileType)
-                      ? `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(previewTarget.filePath)}`
-                      : previewTarget.filePath
-                  }
-                  className="w-full h-full"
-                  title={`Preview of ${previewTarget.fileName}`}
-                />
+                src={
+                  needsOfficeViewer(previewTarget.fileName, previewTarget.fileType)
+                    ? `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(previewTarget.filePath)}`
+                    : previewTarget.filePath
+                }
+                className="w-full h-full"
+                title={`Preview of ${previewTarget.fileName}`}
+              />
             }
           </div>
         </DialogContent>
@@ -185,18 +185,18 @@ export default function DocumentsDialog({
                   <span className="shrink-0 flex items-center gap-1.5">
                     <span
                       className={`size-2.5 rounded-full ${doc.status === "completed"
-                          ? "bg-green-400"
-                          : doc.status === "failed"
-                            ? "bg-red-400"
-                            : "bg-yellow-400"
+                        ? "bg-green-400"
+                        : doc.status === "failed"
+                          ? "bg-red-400"
+                          : "bg-yellow-400"
                         }`}
                     />
                     <span
                       className={`hidden sm:inline text-xs capitalize ${doc.status === "completed"
-                          ? "text-green-400"
-                          : doc.status === "failed"
-                            ? "text-red-400"
-                            : "text-yellow-400"
+                        ? "text-green-400"
+                        : doc.status === "failed"
+                          ? "text-red-400"
+                          : "text-yellow-400"
                         }`}
                     >
                       {doc.status}
