@@ -123,7 +123,7 @@ export default ({
               This will permanently remove the file and all its processed chunks.
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter className="gap-2 sm:gap-0">
+          <DialogFooter className="gap-3">
             <Button
               variant="outline"
               className="border-slate-600 text-slate-700 hover:bg-slate-800"
