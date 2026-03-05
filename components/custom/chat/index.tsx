@@ -59,7 +59,7 @@ export default function Chat() {
 
 			for (const fileData of message.files) {
 				const fileName = fileData.filename || 'unknown.pdf';
-				const userMessageText = message.text || `Uploading file: ${fileName}`;
+				const userMessageText = `Uploading file: ${fileName}`;
 				const userMessage: UIMessage = {
 					id: crypto.randomUUID(),
 					role: "user" as const,
@@ -153,6 +153,11 @@ export default function Chat() {
 
 			setInput("");
 			setProcessingFile(false);
+
+			// Send the text message after file processing completes
+			if (message.text) {
+				sendMessage({ text: message.text });
+			}
 		}
 		// Handle text-only messages
 		else if (message.text) {

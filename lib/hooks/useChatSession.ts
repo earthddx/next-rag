@@ -17,6 +17,12 @@ export function useChatSession() {
 
   const chat = useChat();
 
+  // Always up-to-date messages ref to avoid stale closure issues
+  const messagesRef = React.useRef(chat.messages);
+  React.useEffect(() => {
+    messagesRef.current = chat.messages;
+  }, [chat.messages]);
+
   // Override sendMessage to include sessionId
   const sendMessageWithSession = React.useCallback(async (message: { text: string }) => {
     const currentSessionId = sessionIdRef.current;
@@ -37,8 +43,8 @@ export function useChatSession() {
       parts: [{ type: 'text' as const, text: message.text }],
     };
 
-    // Add user message to UI immediately
-    const updatedMessages = [...chat.messages, userMessage];
+    // Use ref to get latest messages, avoiding stale closure
+    const updatedMessages = [...messagesRef.current, userMessage];
     chat.setMessages(updatedMessages);
 
     try {
@@ -146,7 +152,7 @@ export function useChatSession() {
       // Always reset streaming state
       setIsStreaming(false);
     }
-  }, [chat]);
+  }, [chat, sessionIdRef]);
 
   // Ensure session is created before allowing messages
   const isReady = !isLoadingSession && sessionId !== null;
