@@ -2,7 +2,7 @@ import { getServerSession } from "next-auth";
 import { authConfig } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import SettingsClient from "@/components/custom/settings-client";
+import SettingsClient from "@/components/custom/settings";
 
 export default async function SettingsPage() {
     const session = await getServerSession(authConfig);
