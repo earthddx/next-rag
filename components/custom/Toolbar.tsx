@@ -36,7 +36,7 @@ export default function Toolbar({
     userEmail: string | null | undefined;
 }) {
     const router = useRouter();
-    const { theme, setTheme } = useTheme();
+    const { setTheme, resolvedTheme } = useTheme();
     const [mounted, setMounted] = useState(false);
     const [docsOpen, setDocsOpen] = useState(false);
 
@@ -70,11 +70,11 @@ export default function Toolbar({
                 <div className="shrink-0 flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
                     <button
                         type="button"
-                        onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                        onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
                         className="p-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
                         aria-label="Toggle theme"
                     >
-                        {mounted && theme === "dark" ? <Sun className="size-5" /> : <Moon className="size-5" />}
+                        {mounted && resolvedTheme === "dark" ? <Sun className="size-5" /> : <Moon className="size-5" />}
                     </button>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
