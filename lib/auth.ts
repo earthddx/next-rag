@@ -52,12 +52,10 @@ export const authConfig: NextAuthOptions = {
         GithubProvider({
             clientId: process.env.GITHUB_ID!,
             clientSecret: process.env.GITHUB_SECRET!,
-            allowDangerousEmailAccountLinking: true,
         }),
         GoogleProvider({
             clientId: process.env.GOOGLE_CLIENT_ID!,
             clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-            allowDangerousEmailAccountLinking: true,
         })
     ],
     session: {
@@ -73,7 +71,6 @@ export const authConfig: NextAuthOptions = {
         },
         async session({ session, token }) {
             if (session.user) {
-                // Attach the user ID from the token to the session object
                 (session.user as any).id = token.id;
             }
             return session;
